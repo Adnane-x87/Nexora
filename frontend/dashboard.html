@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NEXORA — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="dashboard.css"/>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">NEX<span>ORA</span></div>
+    <div class="sidebar-label">Main</div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active">
+        <span class="nav-icon">⊞</span> Dashboard
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">📦</span> Products
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">🛒</span> Orders
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">👥</span> Customers
+      </a>
+    </nav>
+    <div class="sidebar-label">Settings</div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="nav-item">
+        <span class="nav-icon">🌐</span> View Store
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="admin-card">
+        <div class="admin-avatar">A</div>
+        <div>
+          <div class="admin-name">Admin</div>
+          <div class="admin-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">Products</h1>
+        <span class="page-sub">Manage your gaming & tech inventory</span>
+      </div>
+      <div class="topbar-right">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search products…"/>
+        </div>
+        <button class="btn-add" id="openModalBtn">+ Add Product</button>
+      </div>
+    </header>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div>
+          <div class="stat-val" id="statTotal">0</div>
+          <div class="stat-lbl">Total Products</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🎮</div>
+        <div>
+          <div class="stat-val" id="statGaming">0</div>
+          <div class="stat-lbl">Gaming</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💻</div>
+        <div>
+          <div class="stat-val" id="statTech">0</div>
+          <div class="stat-lbl">Tech / Electronics</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏷️</div>
+        <div>
+          <div class="stat-val" id="statSale">0</div>
+          <div class="stat-lbl">On Sale</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-row">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="Gaming">🎮 Gaming</button>
+      <button class="filter-btn" data-filter="Laptops">💻 Laptops</button>
+      <button class="filter-btn" data-filter="Audio">🎧 Audio</button>
+      <button class="filter-btn" data-filter="Monitors">🖥️ Monitors</button>
+      <button class="filter-btn" data-filter="Accessories">🕹️ Accessories</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Old Price</th>
+            <th>Badge</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="productsTableBody">
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">No products found</div>
+        <div class="empty-sub">Add your first product or try a different filter.</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Add Product</h2>
+        <button class="modal-close" id="closeModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- IMAGE UPLOAD -->
+        <div class="img-upload-area" id="imgUploadArea">
+          <input type="file" id="imgFileInput" accept="image/*" hidden/>
+          <div class="img-preview" id="imgPreview">
+            <div class="upload-placeholder" id="uploadPlaceholder">
+              <div class="upload-icon">🖼️</div>
+              <div class="upload-text">Click to upload product image</div>
+              <div class="upload-hint">PNG, JPG, WEBP up to 5MB</div>
+            </div>
+            <img id="previewImg" src="" alt="preview" style="display:none;"/>
+          </div>
+          <button type="button" class="btn-upload" id="triggerUpload">Choose Image</button>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">Product Name *</label>
+            <input type="text" class="form-input" id="fieldName" placeholder="e.g. PlayStation 5 Pro"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select class="form-input" id="fieldCategory">
+              <option value="">Select category</option>
+              <option value="Gaming">🎮 Gaming</option>
+              <option value="Laptops">💻 Laptops</option>
+              <option value="Audio">🎧 Audio</option>
+              <option value="Monitors">🖥️ Monitors</option>
+              <option value="Accessories">🕹️ Accessories</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Brand</label>
+            <input type="text" class="form-input" id="fieldBrand" placeholder="e.g. Sony, Razer, Asus"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price ($) *</label>
+            <input type="number" class="form-input" id="fieldPrice" placeholder="499"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Old Price ($) <span class="label-hint">optional</span></label>
+            <input type="number" class="form-input" id="fieldOldPrice" placeholder="599"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Badge</label>
+            <select class="form-input" id="fieldBadge">
+              <option value="">None</option>
+              <option value="new">New</option>
+              <option value="sale">Sale</option>
+              <option value="hot">Hot</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock</label>
+            <input type="number" class="form-input" id="fieldStock" placeholder="100"/>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Description</label>
+            <textarea class="form-input form-textarea" id="fieldDesc" placeholder="Short product description…"></textarea>
+          </div>
+        </div>
+
+        <div class="form-error" id="formError"></div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" id="cancelBtn">Cancel</button>
+        <button class="btn-save" id="saveBtn">Save Product</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM -->
+  <div class="modal-overlay" id="deleteOverlay">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2 class="modal-title">Delete Product</h2>
+        <button class="modal-close" id="closeDeleteBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--white-dim);font-size:14px;line-height:1.7;">
+          Are you sure you want to delete <strong id="deleteProductName" style="color:var(--white)"></strong>? This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="cancelDeleteBtn">Cancel</button>
+        <button class="btn-delete-confirm" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js" defer></script>
+</body>
+</html>
