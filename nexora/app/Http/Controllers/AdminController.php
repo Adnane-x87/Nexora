@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -14,11 +15,30 @@ class AdminController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $categories = Category::withCount('products')->get();
-        $products = Product::with('category')->latest()->get();
-        $users = User::latest()->get();
+        $search = $request->input('search');
 
-        return view('admin.dashboard', compact('categories', 'products', 'users'));
+        $categoriesQuery = Category::withCount('products');
+        $productsQuery = Product::with('category');
+
+        if ($search) {
+            $categoriesQuery->where('name', 'like', "%{$search}%");
+            $productsQuery->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $categories = $categoriesQuery->get();
+        $products = $productsQuery->latest()->get();
+        $users = User::latest()->get();
+        $orders = Order::with('user')->latest()->get();
+
+        if ($request->has('activeTab')) {
+            session(['activeTab' => $request->activeTab]);
+        }
+
+        return view('admin.dashboard', compact('categories', 'products', 'users', 'orders'));
     }
 
     // --- CATEGORIES ---
@@ -71,7 +91,7 @@ class AdminController extends Controller
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
-            $validated['image'] = '/storage/' . $path;
+            $validated['image'] = $path;
         }
 
         Product::create($validated);
@@ -96,10 +116,10 @@ class AdminController extends Controller
 
         if ($request->hasFile('image')) {
             if ($product->image) {
-                Storage::disk('public')->delete(str_replace('/storage/', '', $product->image));
+                Storage::disk('public')->delete($product->image);
             }
             $path = $request->file('image')->store('products', 'public');
-            $validated['image'] = '/storage/' . $path;
+            $validated['image'] = $path;
         }
 
         $product->update($validated);
@@ -148,5 +168,16 @@ class AdminController extends Controller
         }
         $user->delete();
         return back()->with('success', 'User deleted!')->with('activeTab', 'users');
+    }
+    public function orders()
+    {
+        $orders = Order::with('user')->latest()->paginate(10);
+        return view('admin.orders', compact('orders'));
+    }
+
+    public function updateOrderStatus(Request $request, Order $order)
+    {
+        $order->update(['status' => $request->status]);
+        return back()->with('success', 'Order status updated!');
     }
 }

@@ -53,8 +53,25 @@ class ShopController extends Controller
                 break;
         }
 
-        $products = $query->get();
+        $products = $query->paginate(12);
 
         return view('shop', compact('categories', 'products'));
+    }
+
+    public function show($slug)
+    {
+        $product = Product::with('category')->where('slug', $slug)->firstOrFail();
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->limit(4)
+            ->get();
+        return view('product-details', compact('product', 'relatedProducts'));
+    }
+
+    public function toggleWishlist(Product $product)
+    {
+        $user = auth()->user();
+        $user->wishlistedProducts()->toggle($product->id);
+        return back();
     }
 }

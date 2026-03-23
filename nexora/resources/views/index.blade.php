@@ -15,7 +15,7 @@
       </h1>
       <p class="hero-sub">Cutting-edge electronics engineered for those who refuse to settle. Explore flagship devices before anyone else.</p>
       <div class="hero-ctas">
-        <button class="btn-primary">Shop Now</button>
+        <a href="{{ route('shop') }}"><button class="btn-primary">Shop Now</button></a>
         <a href="#" class="btn-ghost">View Deals <span class="arrow">→</span></a>
       </div>
       <div class="hero-stats">
@@ -86,20 +86,32 @@
       @forelse($featuredProducts as $fp)
         <div class="product-card">
           @if($fp->badge)<span class="tag {{ $fp->badge }}">{{ ucfirst($fp->badge) }}</span>@endif
-          <div class="wishlist-btn"><i data-lucide="heart" style="width:16px;height:16px;"></i></div>
-          <div class="product-img-wrap">
-            @if($fp->image)<img src="{{ $fp->image }}" alt="" style="width:100%;height:100%;object-fit:cover;"/>@else <div style="font-size:48px;display:flex;align-items:center;justify-content:center;height:100%;">{{ $fp->category->emoji ?? '📦' }}</div> @endif
-          </div>
+          @auth
+          <form action="{{ route('wishlist.toggle', $fp->id) }}" method="POST" class="wishlist-form">
+            @csrf
+            <button type="submit" class="wishlist-btn {{ auth()->user()->wishlistedProducts->contains($fp->id) ? 'active' : '' }}">
+                <i data-lucide="heart" style="width:16px;height:16px;"></i>
+            </button>
+          </form>
+          @else
+          <div class="wishlist-btn" onclick="window.location='{{ route('login') }}'"><i data-lucide="heart" style="width:16px;height:16px;"></i></div>
+          @endauth
+
+          <a href="{{ route('product.show', $fp->slug) }}" class="product-img-wrap" style="text-decoration:none;">
+            @if($fp->image)<img src="{{ Storage::url($fp->image) }}" alt="" style="width:100%;height:100%;object-fit:cover;"/>@else <div style="font-size:48px;display:flex;align-items:center;justify-content:center;height:100%;">{{ $fp->category->emoji ?? '📦' }}</div> @endif
+          </a>
           <div class="product-info">
             <div class="product-brand">{{ $fp->brand ?? '' }}</div>
-            <div class="product-name">{{ $fp->name }}</div>
+            <a href="{{ route('product.show', $fp->slug) }}" class="product-name" style="text-decoration:none;color:var(--white);">{{ $fp->name }}</a>
             <div class="product-rating"><span class="s">★★★★★</span> 4.9</div>
             <div class="product-footer">
               <div class="price-wrap">
                 <span class="price-new">${{ number_format($fp->price) }}</span>
                 @if($fp->old_price)<span class="price-old">${{ number_format($fp->old_price) }}</span>@endif
               </div>
+              @auth
               <button class="add-cart-btn"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
+              @endauth
             </div>
           </div>
         </div>

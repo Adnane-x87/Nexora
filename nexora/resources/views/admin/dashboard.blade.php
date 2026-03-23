@@ -73,6 +73,11 @@
       <header class="topbar">
         <div class="topbar-left"><h1 class="page-title">Products</h1><span class="page-sub">Manage your inventory</span></div>
         <div class="topbar-right">
+          <form action="{{ route('admin.dashboard') }}" method="GET" class="search-wrap" style="margin-right:10px;">
+            <input type="hidden" name="activeTab" value="products">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" name="search" value="{{ request('search') }}" class="search-input" placeholder="Search products...">
+          </form>
           <button class="btn-add" onclick="openProductModal()">+ Add Product</button>
         </div>
       </header>
@@ -89,7 +94,7 @@
             @forelse($products as $p)
             <tr>
               <td><div class="prod-cell"><div class="prod-thumb">
-                @if($p->image) <img src="{{ $p->image }}" alt=""/> @else {{ $p->category->emoji ?? '📦' }} @endif
+                @if($p->image) <img src="{{ Storage::url($p->image) }}" alt=""/> @else {{ $p->category->emoji ?? '📦' }} @endif
               </div><div><div class="prod-name">{{ $p->name }}</div><div class="prod-brand">{{ $p->brand ?? '—' }}</div></div></div></td>
               <td><span class="cat-pill">{{ $p->category->name ?? 'None' }}</span></td>
               <td><span class="price-cell">${{ number_format($p->price) }}</span></td>
@@ -113,7 +118,14 @@
     <div class="page {{ session('activeTab') == 'categories' ? 'active' : '' }}" id="page-categories">
       <header class="topbar">
         <div class="topbar-left"><h1 class="page-title">Categories</h1><span class="page-sub">Manage product categories</span></div>
-        <div class="topbar-right"><button class="btn-add" onclick="openCatModal()">+ Add Category</button></div>
+        <div class="topbar-right">
+          <form action="{{ route('admin.dashboard') }}" method="GET" class="search-wrap" style="margin-right:10px;">
+            <input type="hidden" name="activeTab" value="categories">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" name="search" value="{{ request('search') }}" class="search-input" placeholder="Search categories...">
+          </form>
+          <button class="btn-add" onclick="openCatModal()">+ Add Category</button>
+        </div>
       </header>
       <div class="categories-grid-manage" id="categoriesGrid">
         @foreach($categories as $c)
@@ -130,11 +142,55 @@
       </div>
     </div>
 
+    <!-- ORDERS -->
+    <div class="page {{ session('activeTab') == 'orders' ? 'active' : '' }}" id="page-orders">
+      <header class="topbar">
+        <div class="topbar-left"><h1 class="page-title">Orders</h1><span class="page-sub">Manage customer orders & status</span></div>
+      </header>
+      <div class="table-wrap">
+        <table class="products-table">
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            @forelse($orders as $o)
+            <tr>
+              <td><span style="font-weight:700;color:var(--accent);">#{{ $o->id }}</span></td>
+              <td><div class="prod-cell"><div><div class="prod-name">{{ $o->full_name }}</div><div class="prod-brand">{{ $o->email }}</div></div></div></td>
+              <td><span class="price-cell">${{ number_format($o->total_price) }}</span></td>
+              <td><span class="badge badge-{{ $o->status }}">{{ strtoupper($o->status) }}</span></td>
+              <td style="color:var(--white-dim)">{{ $o->created_at->format('M d, Y') }}</td>
+              <td>
+                <form action="{{ route('admin.orders.status', $o->id) }}" method="POST">
+                  @csrf
+                  <select name="status" onchange="this.form.submit()" style="background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:5px 10px;border-radius:4px;font-size:12px;outline:none;cursor:pointer;">
+                    <option value="pending" {{ $o->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="paid" {{ $o->status == 'paid' ? 'selected' : '' }}>Paid</option>
+                    <option value="shipped" {{ $o->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                    <option value="delivered" {{ $o->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                    <option value="cancelled" {{ $o->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                  </select>
+                </form>
+              </td>
+            </tr>
+            @empty
+            <div class="empty-state"><div class="empty-icon"><i data-lucide="shopping-bag" style="width:48px;height:48px;"></i></div><div class="empty-title">No orders yet</div></div>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- USERS -->
     <div class="page {{ session('activeTab') == 'users' ? 'active' : '' }}" id="page-users">
       <header class="topbar">
         <div class="topbar-left"><h1 class="page-title">Users</h1><span class="page-sub">Manage store users & admins</span></div>
-        <div class="topbar-right"><button class="btn-add" onclick="openUserModal()">+ Add User</button></div>
+        <div class="topbar-right">
+          <form action="{{ route('admin.dashboard') }}" method="GET" class="search-wrap" style="margin-right:10px;">
+            <input type="hidden" name="activeTab" value="users">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" name="search" value="{{ request('search') }}" class="search-input" placeholder="Search users...">
+          </form>
+          <button class="btn-add" onclick="openUserModal()">+ Add User</button>
+        </div>
       </header>
       <div class="table-wrap">
         <table class="products-table">
@@ -291,7 +347,8 @@
             document.getElementById('fieldStock').value = prod.stock;
             document.getElementById('fieldDesc').value = prod.description || '';
             if (prod.image) {
-                document.getElementById('previewImg').src = prod.image;
+                let imgUrl = prod.image.startsWith('http') ? prod.image : '/storage/' + prod.image;
+                document.getElementById('previewImg').src = imgUrl;
                 document.getElementById('previewImg').style.display = 'block';
                 document.getElementById('uploadPlaceholder').style.display = 'none';
             }

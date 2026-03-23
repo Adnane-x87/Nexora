@@ -8,6 +8,7 @@
     <nav class="sidebar-nav">
         <a href="#" class="nav-item {{ $activePage === 'products' ? 'active' : '' }}" data-page="products"><span class="nav-icon"><i data-lucide="package" style="width:18px;height:18px;"></i></span> Products</a>
         <a href="#" class="nav-item {{ $activePage === 'categories' ? 'active' : '' }}" data-page="categories"><span class="nav-icon"><i data-lucide="tag" style="width:18px;height:18px;"></i></span> Categories</a>
+        <a href="#" class="nav-item {{ $activePage === 'orders' ? 'active' : '' }}" data-page="orders"><span class="nav-icon"><i data-lucide="shopping-bag" style="width:18px;height:18px;"></i></span> Orders</a>
         <a href="#" class="nav-item {{ $activePage === 'users' ? 'active' : '' }}" data-page="users"><span class="nav-icon"><i data-lucide="users" style="width:18px;height:18px;"></i></span> Users</a>
     </nav>
     <div class="sidebar-label">Store</div>
