@@ -5,22 +5,24 @@
 @section('content')
     <p class="login-tagline">Sign in to your account</p>
 
-    <div class="login-card">
+    <form action="{{ route('login') }}" method="POST" class="login-card">
+      @csrf
       <div class="form-group">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com"/>
+        <label class="form-label" for="email">Email</label>
+        <input type="email" name="email" class="form-input" id="email" placeholder="you@example.com" value="{{ old('email') }}" required autofocus/>
+        @error('email') <div class="form-error">{{ $message }}</div> @enderror
       </div>
       <div class="form-group">
-        <label class="form-label">Password</label>
+        <label class="form-label" for="password">Password</label>
         <div class="pass-wrap">
-          <input type="password" class="form-input" id="loginPass" placeholder="••••••••"/>
-          <button class="pass-toggle" data-target="loginPass">👁</button>
+          <input type="password" name="password" class="form-input" id="password" placeholder="••••••••" required/>
+          <button type="button" class="pass-toggle" data-target="password">👁</button>
         </div>
+        @error('password') <div class="form-error">{{ $message }}</div> @enderror
       </div>
-      <div class="form-error" id="loginError"></div>
-      <button class="btn-login" id="loginBtn">Sign In</button>
+      <button type="submit" class="btn-login">Sign In</button>
       <div class="login-footer">Don't have an account? <a href="{{ route('register') }}">Register</a></div>
-    </div>
+    </form>
 @endsection
 
 @push('scripts')

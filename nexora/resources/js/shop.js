@@ -22,7 +22,7 @@ function renderCatFilters() {
   const allCount = products.length;
   list.innerHTML = `
     <div class="cat-filter-item ${!activeCategory ? 'active' : ''}" data-cat="all">
-      <span>🗂️ All Products</span>
+      <span><i data-lucide="layout-grid" style="width:14px;height:14px;margin-right:8px;vertical-align:middle;"></i> All Products</span>
       <span class="cat-filter-count">${allCount}</span>
     </div>`
     + cats.map(c => {
@@ -37,24 +37,31 @@ function renderCatFilters() {
   list.querySelectorAll('.cat-filter-item').forEach(item => {
     item.addEventListener('click', () => {
       activeCategory = item.dataset.cat === 'all' ? null : item.dataset.cat;
+      document.querySelector('.shop-title').textContent = activeCategory || 'All Products';
       renderCatFilters();
       renderShopGrid();
       renderActiveFilters();
+      if (window.lucide) lucide.createIcons();
     });
   });
+  if (window.lucide) lucide.createIcons();
 }
 
 // ── RENDER ACTIVE FILTER TAGS ─────────────────────
 function renderActiveFilters() {
   const area = document.getElementById('activeFilters');
   const tags = [];
-  if (activeCategory) tags.push(`<div class="filter-tag" data-remove="cat">${activeCategory} <span class="remove">✕</span></div>`);
-  activeBadges.forEach(b => tags.push(`<div class="filter-tag" data-remove="badge-${b}">${b} <span class="remove">✕</span></div>`));
+  if (activeCategory) tags.push(`<div class="filter-tag" data-remove="cat">${activeCategory} <span class="remove"><i data-lucide="x" style="width:10px;height:10px;"></i></span></div>`);
+  activeBadges.forEach(b => tags.push(`<div class="filter-tag" data-remove="badge-${b}">${b} <span class="remove"><i data-lucide="x" style="width:10px;height:10px;"></i></span></div>`));
   area.innerHTML = tags.join('');
   area.querySelectorAll('.filter-tag').forEach(tag => {
     tag.addEventListener('click', () => {
       const r = tag.dataset.remove;
-      if (r === 'cat') { activeCategory = null; renderCatFilters(); }
+      if (r === 'cat') { 
+        activeCategory = null; 
+        document.querySelector('.shop-title').textContent = 'All Products';
+        renderCatFilters(); 
+      }
       else if (r.startsWith('badge-')) {
         const b = r.replace('badge-', '');
         activeBadges = activeBadges.filter(x => x !== b);
@@ -62,8 +69,10 @@ function renderActiveFilters() {
       }
       renderActiveFilters();
       renderShopGrid();
+      if (window.lucide) lucide.createIcons();
     });
   });
+  if (window.lucide) lucide.createIcons();
 }
 
 // ── RENDER GRID ───────────────────────────────────
@@ -89,7 +98,8 @@ function renderShopGrid() {
   countEl.textContent = `${products.length} product${products.length !== 1 ? 's' : ''}`;
 
   if (!products.length) {
-    grid.innerHTML = `<div class="shop-empty"><div class="e-icon">🔍</div><div class="e-title">No products found</div><p>Try a different filter or search term.</p></div>`;
+    grid.innerHTML = `<div class="shop-empty"><div class="e-icon"><i data-lucide="search-x" style="width:48px;height:48px;"></i></div><div class="e-title">No products found</div><p>Try a different filter or search term.</p></div>`;
+    if (window.lucide) lucide.createIcons();
     return;
   }
 
@@ -99,7 +109,7 @@ function renderShopGrid() {
   grid.innerHTML = products.map(p => `
     <div class="product-card">
       ${p.badge ? `<span class="tag ${p.badge}">${p.badge}</span>` : ''}
-      <div class="wishlist-btn">♡</div>
+      <div class="wishlist-btn"><i data-lucide="heart" style="width:16px;height:16px;"></i></div>
       <div class="product-img-wrap">
         ${p.image ? `<img src="${p.image}" alt="${p.name}"/>` : catEmoji(p.category)}
       </div>
@@ -112,7 +122,7 @@ function renderShopGrid() {
             <span class="price-new">$${Number(p.price).toLocaleString()}</span>
             ${p.oldPrice ? `<span class="price-old">$${Number(p.oldPrice).toLocaleString()}</span>` : ''}
           </div>
-          <button class="add-cart-btn">+</button>
+          <button class="add-cart-btn"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
         </div>
       </div>
     </div>`).join('');
@@ -121,19 +131,28 @@ function renderShopGrid() {
   grid.querySelectorAll('.add-cart-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
-      this.textContent = '✓'; this.style.background = 'var(--accent)'; this.style.borderColor = 'var(--accent)'; this.style.color = '#000';
-      setTimeout(() => { this.textContent = '+'; this.style.background = ''; this.style.borderColor = ''; this.style.color = ''; }, 1000);
+      this.innerHTML = '<i data-lucide="check" style="width:16px;height:16px;"></i>'; 
+      this.style.background = 'var(--accent)'; this.style.borderColor = 'var(--accent)'; this.style.color = '#000';
+      if (window.lucide) lucide.createIcons();
+      setTimeout(() => { 
+        this.innerHTML = '<i data-lucide="plus" style="width:16px;height:16px;"></i>'; 
+        this.style.background = ''; this.style.borderColor = ''; this.style.color = ''; 
+        if (window.lucide) lucide.createIcons();
+      }, 1000);
       const c = document.querySelector('.cart-count'); c.textContent = parseInt(c.textContent) + 1;
     });
   });
   grid.querySelectorAll('.wishlist-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
-      const liked = this.textContent === '♥';
-      this.textContent = liked ? '♡' : '♥';
+      const liked = this.classList.contains('active');
+      this.classList.toggle('active');
+      this.innerHTML = liked ? '<i data-lucide="heart" style="width:16px;height:16px;"></i>' : '<i data-lucide="heart" style="width:16px;height:16px;fill:currentColor;"></i>';
       this.style.background = liked ? '' : 'var(--red)'; this.style.borderColor = liked ? '' : 'var(--red)';
+      if (window.lucide) lucide.createIcons();
     });
   });
+  if (window.lucide) lucide.createIcons();
 }
 
 // ── BADGE FILTERS ─────────────────────────────────

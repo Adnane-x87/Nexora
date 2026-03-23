@@ -25,16 +25,18 @@
       </div>
     </div>
     <div class="hero-visual">
-      <div class="mini-card left"><span class="icon">⚡</span><div><div>Fast Delivery</div><div class="label">Ships in 24h</div></div></div>
+      <div class="mini-card left"><span class="icon"><i data-lucide="zap" style="width:16px;height:16px;"></i></span><div><div>Fast Delivery</div><div class="label">Ships in 24h</div></div></div>
       <div class="hero-product-card">
         <span class="product-badge">-25%</span>
-        <div class="hero-img-placeholder"><img id="heroImg" src="{{ asset('assets/hero-product.png') }}" alt="Hero Product" onerror="this.style.display='none';this.parentElement.innerHTML='💻';"/></div>
+        <div class="hero-img-placeholder">
+          <img id="heroImg" src="{{ asset('assets/hero-product.png') }}" alt="Hero Product" onload="this.parentElement.style.background='none'" onerror="this.style.display='none'"/>
+        </div>
         <div class="hero-prod-name">ProBook Ultra X1</div>
         <div class="hero-prod-sub">16" · M4 Pro · 32GB RAM</div>
         <div class="hero-prod-price">$1,499</div>
         <div class="rating-row"><span class="stars">★★★★★</span><span>(2,341 reviews)</span></div>
       </div>
-      <div class="mini-card right"><span class="icon">🔒</span><div><div>Secure Pay</div><div class="label">256-bit SSL</div></div></div>
+      <div class="mini-card right"><span class="icon"><i data-lucide="shield-check" style="width:16px;height:16px;"></i></span><div><div>Secure Pay</div><div class="label">256-bit SSL</div></div></div>
     </div>
   </section>
 
@@ -87,10 +89,10 @@
   <!-- FEATURES -->
   <div class="features-section fade-up">
     <div class="features-grid">
-      <div class="feature-item"><div class="feature-icon">🚀</div><div><div class="feature-title">Fast Shipping</div><div class="feature-desc">Orders over $99 ship free, delivered in 24–48 hours.</div></div></div>
-      <div class="feature-item"><div class="feature-icon">🔄</div><div><div class="feature-title">Easy Returns</div><div class="feature-desc">30-day hassle-free returns on every purchase.</div></div></div>
-      <div class="feature-item"><div class="feature-icon">🛡️</div><div><div class="feature-title">2-Year Warranty</div><div class="feature-desc">Every product covered against defects and damage.</div></div></div>
-      <div class="feature-item"><div class="feature-icon">💬</div><div><div class="feature-title">24/7 Support</div><div class="feature-desc">Real humans ready to help, any time of day.</div></div></div>
+      <div class="feature-item"><div class="feature-icon"><i data-lucide="truck"></i></div><div><div class="feature-title">Fast Shipping</div><div class="feature-desc">Orders over $99 ship free, delivered in 24–48 hours.</div></div></div>
+      <div class="feature-item"><div class="feature-icon"><i data-lucide="refresh-cw"></i></div><div><div class="feature-title">Easy Returns</div><div class="feature-desc">30-day hassle-free returns on every purchase.</div></div></div>
+      <div class="feature-item"><div class="feature-icon"><i data-lucide="shield"></i></div><div><div class="feature-title">2-Year Warranty</div><div class="feature-desc">Every product covered against defects and damage.</div></div></div>
+      <div class="feature-item"><div class="feature-icon"><i data-lucide="message-circle"></i></div><div><div class="feature-title">24/7 Support</div><div class="feature-desc">Real humans ready to help, any time of day.</div></div></div>
     </div>
   </div>
 @endsection

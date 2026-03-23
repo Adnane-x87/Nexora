@@ -1,7 +1,3 @@
-// ── AUTH GUARD ────────────────────────────────────
-const session = JSON.parse(localStorage.getItem('nexora_session') || 'null');
-if (!session || session.role !== 'admin') window.location.href = 'login.html';
-
 // ── STORAGE ───────────────────────────────────────
 const KEYS = { products: 'nexora_products', categories: 'nexora_categories', users: 'nexora_users' };
 
@@ -56,10 +52,11 @@ function openOverlay(id)  { document.getElementById(id).classList.add('open'); }
 function renderStats() {
   const totalStock = products.reduce((s, p) => s + (Number(p.stock) || 0), 0);
   document.getElementById('statsRow').innerHTML = `
-    <div class="stat-card"><div class="stat-icon">📦</div><div><div class="stat-val">${products.length}</div><div class="stat-lbl">Products</div></div></div>
-    <div class="stat-card"><div class="stat-icon">🏷️</div><div><div class="stat-val">${categories.length}</div><div class="stat-lbl">Categories</div></div></div>
-    <div class="stat-card"><div class="stat-icon">👥</div><div><div class="stat-val">${users.length}</div><div class="stat-lbl">Users</div></div></div>
-    <div class="stat-card"><div class="stat-icon">📊</div><div><div class="stat-val">${totalStock}</div><div class="stat-lbl">Total Stock</div></div></div>`;
+    <div class="stat-card"><div class="stat-icon"><i data-lucide="package" style="width:24px;height:24px;"></i></div><div><div class="stat-val">${products.length}</div><div class="stat-lbl">Products</div></div></div>
+    <div class="stat-card"><div class="stat-icon"><i data-lucide="tag" style="width:24px;height:24px;"></i></div><div><div class="stat-val">${categories.length}</div><div class="stat-lbl">Categories</div></div></div>
+    <div class="stat-card"><div class="stat-icon"><i data-lucide="users" style="width:24px;height:24px;"></i></div><div><div class="stat-val">${users.length}</div><div class="stat-lbl">Users</div></div></div>
+    <div class="stat-card"><div class="stat-icon"><i data-lucide="bar-chart-3" style="width:24px;height:24px;"></i></div><div><div class="stat-val">${totalStock}</div><div class="stat-lbl">Total Stock</div></div></div>`;
+  if (window.lucide) lucide.createIcons();
 
   const max = Math.max(...categories.map(c => products.filter(p => p.category === c.name).length), 1);
   document.getElementById('categoryBars').innerHTML = categories.map(c => {
@@ -102,7 +99,13 @@ function renderProdTable() {
   const empty = document.getElementById('prodEmptyState');
   const thead = document.querySelector('#page-products .products-table thead');
   tbody.innerHTML = '';
-  if (!list.length) { empty.style.display = 'block'; thead.style.display = 'none'; return; }
+  if (!products.length) {
+    empty.style.display = 'block';
+    thead.style.display = 'none';
+    empty.querySelector('.empty-icon').innerHTML = '<i data-lucide="package-search" style="width:48px;height:48px;"></i>';
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
   empty.style.display = 'none'; thead.style.display = '';
   list.forEach(p => {
     const tr = document.createElement('tr');
@@ -113,9 +116,10 @@ function renderProdTable() {
       <td>${p.oldPrice?`<span class="old-price-cell">$${Number(p.oldPrice).toLocaleString()}</span>`:'—'}</td>
       <td>${p.badge?`<span class="badge badge-${p.badge}">${p.badge}</span>`:'<span class="badge-none">—</span>'}</td>
       <td><span class="stock-cell ${Number(p.stock)<25?'stock-low':'stock-ok'}">${p.stock??'—'}</span></td>
-      <td><div class="actions-cell"><button class="action-btn edit" data-id="${p.id}">✏️</button><button class="action-btn del" data-id="${p.id}">🗑️</button></div></td>`;
+      <td><div class="actions-cell"><button class="action-btn edit" data-id="${p.id}"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button><button class="action-btn del" data-id="${p.id}"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button></div></td>`;
     tbody.appendChild(tr);
   });
+  if (window.lucide) lucide.createIcons();
   tbody.querySelectorAll('.action-btn.edit').forEach(btn => btn.addEventListener('click', () => openProdModal(products.find(p => p.id === +btn.dataset.id))));
   tbody.querySelectorAll('.action-btn.del').forEach(btn => btn.addEventListener('click', () => openDel(+btn.dataset.id, 'product')));
 }
@@ -187,8 +191,9 @@ function renderCatsPage() {
   const grid = document.getElementById('categoriesGrid');
   grid.innerHTML = categories.map(c => {
     const count = products.filter(p => p.category === c.name).length;
-    return `<div class="cat-manage-card"><div class="cat-manage-actions"><button class="action-btn edit" data-cid="${c.id}">✏️</button><button class="action-btn del" data-cid="${c.id}">🗑️</button></div><div class="cat-manage-icon">${c.emoji}</div><div class="cat-manage-name">${c.name}</div><div class="cat-manage-count">${count} product${count!==1?'s':''}</div></div>`;
+    return `<div class="cat-manage-card"><div class="cat-manage-actions"><button class="action-btn edit" data-cid="${c.id}"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button><button class="action-btn del" data-cid="${c.id}"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button></div><div class="cat-manage-icon">${c.emoji}</div><div class="cat-manage-name">${c.name}</div><div class="cat-manage-count">${count} product${count!==1?'s':''}</div></div>`;
   }).join('');
+  if (window.lucide) lucide.createIcons();
   grid.querySelectorAll('.action-btn.edit').forEach(btn => btn.addEventListener('click', () => openCatModal(categories.find(c => c.id === +btn.dataset.cid))));
   grid.querySelectorAll('.action-btn.del').forEach(btn => btn.addEventListener('click', () => openDel(+btn.dataset.cid, 'category')));
 }
@@ -230,9 +235,10 @@ function renderUsersPage() {
       <td style="color:var(--white-dim)">${u.email}</td>
       <td><span class="role-badge role-${u.role}">${u.role}</span></td>
       <td style="color:var(--white-dim)">${u.joined}</td>
-      <td><div class="actions-cell"><button class="action-btn edit" data-uid="${u.id}">✏️</button><button class="action-btn del" data-uid="${u.id}">🗑️</button></div></td>`;
+      <td><div class="actions-cell"><button class="action-btn edit" data-uid="${u.id}"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button><button class="action-btn del" data-uid="${u.id}"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button></div></td>`;
     tbody.appendChild(tr);
   });
+  if (window.lucide) lucide.createIcons();
   tbody.querySelectorAll('.action-btn.edit').forEach(btn => btn.addEventListener('click', () => openUserModal(users.find(u => u.id === +btn.dataset.uid))));
   tbody.querySelectorAll('.action-btn.del').forEach(btn => btn.addEventListener('click', () => openDel(+btn.dataset.uid, 'user')));
 }

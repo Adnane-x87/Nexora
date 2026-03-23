@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@yield('title', 'NEXORA — Auth')</title>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
-    @vite(['resources/css/login.css'])
+    <script src="https://unpkg.com/lucide@latest"></script>
+    @vite(['resources/css/app.css', 'resources/css/login.css'])
     @stack('styles')
 </head>
 <body>
@@ -18,6 +19,9 @@
         <div class="back-link"><a href="{{ url('/') }}">← Back to Store</a></div>
     </div>
 
+    <script>
+        lucide.createIcons();
+    </script>
     @stack('scripts')
 </body>
 </html>
