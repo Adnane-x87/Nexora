@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NEXORA — Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="shop.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">NEX<span>ORA</span></a>
+    <ul class="nav-links">
+      <li><a href="shop.html" style="color:var(--white);">Shop</a></li>
+      <li><a href="#">Deals</a></li>
+      <li><a href="#">Brands</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div class="nav-search">
+        <span>🔍</span>
+        <input type="text" id="navSearch" placeholder="Search products…" style="background:transparent;border:none;outline:none;color:var(--white);font-family:var(--font-body);font-size:13px;width:160px;" />
+      </div>
+      <div class="cart-btn">🛒<span class="cart-count">0</span></div>
+      <div id="authArea"></div>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="shop-header">
+    <div class="shop-header-content">
+      <div class="section-label">Store</div>
+      <h1 class="shop-title">All Products</h1>
+    </div>
+  </div>
+
+  <!-- SHOP LAYOUT -->
+  <div class="shop-layout">
+
+    <!-- SIDEBAR FILTERS -->
+    <aside class="shop-sidebar">
+      <div class="sidebar-block">
+        <div class="sidebar-block-title">Categories</div>
+        <div id="catFilterList"></div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-block-title">Badge</div>
+        <div class="badge-filters">
+          <label class="check-item"><input type="checkbox" value="new" class="badge-check"/> <span class="tag new" style="font-size:10px;">New</span></label>
+          <label class="check-item"><input type="checkbox" value="sale" class="badge-check"/> <span class="tag sale" style="font-size:10px;">Sale</span></label>
+          <label class="check-item"><input type="checkbox" value="hot" class="badge-check"/> <span class="tag hot" style="font-size:10px;">Hot</span></label>
+        </div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-block-title">Sort By</div>
+        <select class="sort-select" id="sortSelect">
+          <option value="default">Default</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name-asc">Name: A–Z</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- PRODUCTS AREA -->
+    <div class="shop-main">
+      <div class="shop-toolbar">
+        <div class="active-filters" id="activeFilters"></div>
+        <div class="results-count" id="resultsCount"></div>
+      </div>
+      <div class="products-grid" id="shopGrid"></div>
+    </div>
+
+  </div>
+
+  <script src="main.js"></script>
+  <script src="shop.js"></script>
+</body>
+</html>
