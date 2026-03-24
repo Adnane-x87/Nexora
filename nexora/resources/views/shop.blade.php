@@ -102,8 +102,10 @@
                     @auth
                     <form action="{{ route('cart.add', $p->id) }}" method="POST">
                       @csrf
-                      <button type="submit" class="add-cart-btn"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
+                      <button type="submit" class="add-cart-btn" title="Add to Cart"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
                     </form>
+                    @else
+                    <button class="add-cart-btn" title="Add to Cart" onclick="window.location='{{ route('login') }}'"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
                     @endauth
                   </div>
                 </div>

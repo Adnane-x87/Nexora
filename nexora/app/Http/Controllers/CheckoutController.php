@@ -32,7 +32,7 @@ class CheckoutController extends Controller
         return view('checkout', compact('products', 'total'));
     }
 
-    public function checkout(Request $request)
+    public function process(Request $request)
     {
         $request->validate([
             'full_name' => 'required|string|max:255',
@@ -48,90 +48,112 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $lineItems = [];
         $total = 0;
         foreach ($cart as $id => $qty) {
             $product = Product::find($id);
             if ($product) {
-                $lineItems[] = [
-                    'price_data' => [
-                        'currency' => 'usd',
-                        'product_data' => [
-                            'name' => $product->name,
-                        ],
-                        'unit_amount' => $product->price * 100,
-                    ],
-                    'quantity' => $qty,
-                ];
                 $total += $product->price * $qty;
             }
         }
 
-        Stripe::setApiKey(config('services.stripe.secret'));
+        $stripeSecret = config('services.stripe.secret');
+        if (!$stripeSecret || $stripeSecret === 'sk_test_placeholder') {
+            return redirect()->back()->with('error', 'Stripe API key is not configured. Please add your STRIPE_SECRET to the .env file.');
+        }
 
-        $session = Session::create([
-            'payment_method_types' => ['card'],
-            'line_items' => $lineItems,
-            'mode' => 'payment',
-            'success_url' => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('checkout.cancel'),
-            'metadata' => [
+        Stripe::setApiKey($stripeSecret);
+
+        try {
+            // Create PaymentIntent
+            $paymentIntent = \Stripe\PaymentIntent::create([
+                'amount' => $total * 100, // Amount in cents
+                'currency' => 'usd',
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                ],
+                // We add metadata to link the intent to our user
+                'metadata' => [
+                    'user_id' => auth()->id(),
+                ],
+            ]);
+
+            // Create Pending Order
+            $order = Order::create([
                 'user_id' => auth()->id(),
-                'billing_info' => json_encode($request->only('full_name', 'email', 'phone', 'address', 'city', 'postal_code')),
-            ],
-        ]);
+                'status' => 'pending',
+                'total_price' => $total,
+                'payment_intent_id' => $paymentIntent->id,
+                'full_name' => $request->full_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'city' => $request->city,
+                'postal_code' => $request->postal_code,
+            ]);
 
-        return redirect($session->url);
+            // Create Order Items
+            foreach ($cart as $id => $qty) {
+                $product = Product::find($id);
+                if ($product) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'quantity' => $qty,
+                        'price' => $product->price,
+                    ]);
+                }
+            }
+
+            // Save essential data to session for the next step
+            session()->put('checkout_client_secret', $paymentIntent->client_secret);
+            session()->put('checkout_order_id', $order->id);
+
+            return redirect()->route('checkout.payment');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error initializing payment: ' . $e->getMessage());
+        }
+    }
+
+    public function payment()
+    {
+        $clientSecret = session()->get('checkout_client_secret');
+        $orderId = session()->get('checkout_order_id');
+
+        if (!$clientSecret || !$orderId) {
+            return redirect()->route('checkout.index')->with('error', 'Please submit your billing details first.');
+        }
+
+        $order = Order::findOrFail($orderId);
+
+        return view('checkout-payment', compact('clientSecret', 'order'));
     }
 
     public function success(Request $request)
     {
-        $sessionId = $request->input('session_id');
-        if (!$sessionId) return redirect()->route('home');
+        // The actual order status update is handled by the webhook.
+        // This is purely the success page UI.
 
-        Stripe::setApiKey(config('services.stripe.secret'));
-        $session = Session::retrieve($sessionId);
-
-        if (!$session) return redirect()->route('home');
-
-        $billingInfo = json_decode($session->metadata->billing_info, true);
-        
-        // Create Order
-        $order = Order::create([
-            'user_id' => auth()->id(),
-            'status' => 'paid',
-            'total_price' => $session->amount_total / 100,
-            'session_id' => $session->id,
-            'full_name' => $billingInfo['full_name'],
-            'email' => $billingInfo['email'],
-            'phone' => $billingInfo['phone'],
-            'address' => $billingInfo['address'],
-            'city' => $billingInfo['city'],
-            'postal_code' => $billingInfo['postal_code'],
-        ]);
-
-        // Create Order Items
-        $cart = session()->get('cart', []);
-        foreach ($cart as $id => $qty) {
-            $product = Product::find($id);
-            if ($product) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'quantity' => $qty,
-                    'price' => $product->price,
-                ]);
-                $product->decrement('stock', $qty);
-            }
+        $paymentIntentId = $request->query('payment_intent');
+        if (!$paymentIntentId) {
+            return redirect()->route('home');
         }
 
+        $order = Order::where('payment_intent_id', $paymentIntentId)->first();
+
+        if (!$order) {
+            return redirect()->route('home');
+        }
+
+        // Clear the cart now that checkout is mathematically successful from user's perspective
         session()->forget('cart');
+        session()->forget(['checkout_client_secret', 'checkout_order_id']);
 
         return view('checkout-success', compact('order'));
     }
 
     public function cancel()
     {
-        return redirect()->route('checkout.index')->with('error', 'Payment was cancelled.');
+        return redirect()->route('checkout.index')->with('error', 'Payment was cancelled. You can try again.');
     }
 }

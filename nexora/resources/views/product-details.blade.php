@@ -123,14 +123,22 @@
                                 <a href="{{ route('product.show', $rp->slug) }}" class="product-name" style="text-decoration:none;color:var(--white);">{{ $rp->name }}</a>
                                 <div class="product-footer">
                                     <span class="price-new">${{ number_format($rp->price) }}</span>
-                                    @auth
-                                    <form action="{{ route('wishlist.toggle', $rp->id) }}" method="POST" style="margin-left:auto;">
+                                    <div style="margin-left:auto; display:flex; gap:8px;">
+                                      @auth
+                                      <form action="{{ route('wishlist.toggle', $rp->id) }}" method="POST">
+                                          @csrf
+                                          <button type="submit" class="wishlist-btn-small {{ auth()->user()->wishlistedProducts->contains($rp->id) ? 'active' : '' }}">
+                                              <i data-lucide="heart" style="width:14px;height:14px;"></i>
+                                          </button>
+                                      </form>
+                                      <form action="{{ route('cart.add', $rp->id) }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="wishlist-btn-small {{ auth()->user()->wishlistedProducts->contains($rp->id) ? 'active' : '' }}">
-                                            <i data-lucide="heart" style="width:14px;height:14px;"></i>
-                                        </button>
-                                    </form>
-                                    @endauth
+                                        <button type="submit" class="add-cart-btn" title="Add to Cart"><i data-lucide="plus" style="width:14px;height:14px;"></i></button>
+                                      </form>
+                                      @else
+                                      <button class="add-cart-btn" title="Add to Cart" onclick="window.location='{{ route('login') }}'"><i data-lucide="plus" style="width:14px;height:14px;"></i></button>
+                                      @endauth
+                                    </div>
                                 </div>
                             </div>
                         </div>

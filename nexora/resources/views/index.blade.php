@@ -114,7 +114,13 @@
                   @if($fp->old_price)<span class="price-old">${{ number_format($fp->old_price) }}</span>@endif
                 </div>
                 @auth
-                <button class="add-cart-btn"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
+
+                <form action="{{ route('cart.add', $fp->id) }}" method="POST">
+                  @csrf
+                  <button type="submit" class="add-cart-btn" title="Add to Cart"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
+                </form>
+                @else
+                <button class="add-cart-btn" title="Add to Cart" onclick="window.location='{{ route('login') }}'"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
                 @endauth
               </div>
             </div>

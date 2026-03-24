@@ -128,7 +128,7 @@
 .summary-row .free { color: #4ade80; font-weight: 700; }
 .summary-divider { height: 1px; background: var(--border); margin: 20px 0; }
 .checkout-btn { width: 100%; padding: 16px; margin-top: 20px; }
-.summary-note { font-size: 12px; color: var(--white-faint); text-align: center; margin-top: 20px; }
+.summary-note { font-size: 12px; color: var(--white); text-align: center; margin-top: 20px; }
 
 @media (max-width: 1100px) {
     .cart-grid { grid-template-columns: 1fr; }

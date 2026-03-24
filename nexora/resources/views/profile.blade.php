@@ -59,11 +59,15 @@
                                             <span class="price-old">${{ number_format($p->old_price) }}</span>
                                         @endif
                                     </div>
-                                    <button class="add-cart-btn"><i data-lucide="plus"></i></button>
+                                    <form action="{{ route('cart.add', $p->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="add-cart-btn" title="Add to Cart"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
+                    @endfor
+                @endif
                 </div>
             @else
                 <div class="empty-wishlist">

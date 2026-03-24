@@ -18,10 +18,11 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::updateOrCreate(
-            ['email' => 'test@example.com'],
+            ['email' => 'admin@nexora.com'],
             [
-                'name' => 'Test User',
-                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'name' => 'Admin User',
+                'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+                'role' => 'Admin',
             ]
         );
     }
