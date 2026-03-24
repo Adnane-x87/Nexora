@@ -16,36 +16,39 @@
         @if(count($products) > 0)
             <div class="cart-grid">
                 <div class="cart-items-wrap">
-                    @foreach($products as $p)
-                        <div class="cart-item">
-                            <div class="ci-img">
-                                @if($p->image)<img src="{{ Storage::url($p->image) }}" alt=""/>@else <div class="ci-emoji">{{ $p->category->emoji ?? '📦' }}</div> @endif
-                            </div>
-                            <div class="ci-info">
-                                <span class="ci-brand">{{ $p->brand }}</span>
-                                <h3 class="ci-name"><a href="{{ route('product.show', $p->slug) }}">{{ $p->name }}</a></h3>
-                                <p class="ci-stock @if($p->stock > 0) in @else out @endif">
-                                    @if($p->stock > 0) In Stock @else Out of Stock @endif
-                                </p>
-                            </div>
-                            <div class="ci-qty">
-                                <form action="{{ route('cart.update', $p->id) }}" method="POST" class="qty-form">
+                    @if ($products && count($products) > 0)
+                        @for ($i = 0; $i < count($products); $i++)
+                            @php $p = $products[$i]; @endphp
+                            <div class="cart-item">
+                                <div class="ci-img">
+                                    @if($p->image)<img src="{{ \Illuminate\Support\Facades\Storage::url($p->image) }}" alt=""/>@else <div class="ci-emoji">{{ $p->category->emoji ?? '📦' }}</div> @endif
+                                </div>
+                                <div class="ci-info">
+                                    <span class="ci-brand">{{ $p->brand }}</span>
+                                    <h3 class="ci-name"><a href="{{ route('product.show', $p->slug) }}">{{ $p->name }}</a></h3>
+                                    <p class="ci-stock @if($p->stock > 0) in @else out @endif">
+                                        @if($p->stock > 0) In Stock @else Out of Stock @endif
+                                    </p>
+                                </div>
+                                <div class="ci-qty">
+                                    <form action="{{ route('cart.update', $p->id) }}" method="POST" class="qty-form">
+                                        @csrf
+                                        <button type="submit" name="quantity" value="{{ $p->quantity - 1 }}" class="qty-btn">-</button>
+                                        <input type="text" value="{{ $p->quantity }}" readonly/>
+                                        <button type="submit" name="quantity" value="{{ $p->quantity + 1 }}" class="qty-btn">+</button>
+                                    </form>
+                                </div>
+                                <div class="ci-price">
+                                    <span class="price-each">${{ number_format($p->price) }} each</span>
+                                    <span class="price-subtotal">${{ number_format($p->price * $p->quantity) }}</span>
+                                </div>
+                                <form action="{{ route('cart.remove', $p->id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" name="quantity" value="{{ $p->quantity - 1 }}" class="qty-btn">-</button>
-                                    <input type="text" value="{{ $p->quantity }}" readonly/>
-                                    <button type="submit" name="quantity" value="{{ $p->quantity + 1 }}" class="qty-btn">+</button>
+                                    <button type="submit" class="ci-remove"><i data-lucide="x"></i></button>
                                 </form>
                             </div>
-                            <div class="ci-price">
-                                <span class="price-each">${{ number_format($p->price) }} each</span>
-                                <span class="price-subtotal">${{ number_format($p->price * $p->quantity) }}</span>
-                            </div>
-                            <form action="{{ route('cart.remove', $p->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="ci-remove"><i data-lucide="x"></i></button>
-                            </form>
-                        </div>
-                    @endforeach
+                        @endfor
+                    @endif
                 </div>
 
                 <div class="cart-summary-sidebar">

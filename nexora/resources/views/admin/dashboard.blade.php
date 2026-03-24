@@ -11,9 +11,12 @@
     @if($errors->any())
     <div style="background: rgba(255,71,87,0.15); color: #ff4757; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500; font-size: 14px;">
         <ul style="margin: 0; padding-left: 20px;">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
+            @if (isset($errors) && $errors->any())
+                @php $allErrors = $errors->all(); @endphp
+                @for ($i = 0; $i < count($allErrors); $i++)
+                    <li>{{ $allErrors[$i] }}</li>
+                @endfor
+            @endif
         </ul>
     </div>
     @endif
@@ -34,30 +37,35 @@
             <div class="card-header"><div class="card-title">Products by Category</div></div>
             <div id="categoryBars">
                 @php $maxCat = $categories->max('products_count') ?: 1; @endphp
-                @foreach($categories as $c)
-                <div class="cat-bar-item">
-                    <div class="cat-bar-label">{{ $c->emoji }} {{ $c->name }}</div>
-                    <div class="cat-bar-track"><div class="cat-bar-fill" style="width:{{ round(($c->products_count / $maxCat) * 100) }}%"></div></div>
-                    <div class="cat-bar-count">{{ $c->products_count }}</div>
-                </div>
-                @endforeach
+                @if ($categories && count($categories) > 0)
+                    @for ($i = 0; $i < count($categories); $i++)
+                        @php $c = $categories[$i]; @endphp
+                        <div class="cat-bar-item">
+                            <div class="cat-bar-label">{{ $c->emoji }} {{ $c->name }}</div>
+                            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:{{ round(($c->products_count / ($maxCat ?: 1)) * 100) }}%"></div></div>
+                            <div class="cat-bar-count">{{ $c->products_count }}</div>
+                        </div>
+                    @endfor
+                @endif
             </div>
         </div>
         <div class="card">
             <div class="card-header"><div class="card-title">Recent Products</div></div>
             <div id="recentProducts">
-                @php $recent = $products->take(5); @endphp
-                @forelse($recent as $rp)
-                <div class="recent-item">
-                    <div class="recent-thumb">
-                        @if($rp->image) <img src="{{ $rp->image }}" alt=""/> @else {{ $rp->category->emoji ?? '📦' }} @endif
+                @if ($recentProducts && count($recentProducts) > 0)
+                    @for ($i = 0; $i < count($recentProducts); $i++)
+                    @php $item = $recentProducts[$i]; @endphp
+                    <div class="recent-item">
+                        <div class="recent-thumb">
+                            @if ($item->image) <img src="{{ $item->image }}" alt=""/> @else {{ $item->category->emoji ?? '📦' }} @endif
+                        </div>
+                        <div class="recent-name">{{ $item->name }}</div>
+                        <div class="recent-price">${{ number_format($item->price) }}</div>
                     </div>
-                    <div class="recent-name">{{ $rp->name }}</div>
-                    <div class="recent-price">${{ number_format($rp->price) }}</div>
-                </div>
-                @empty
-                <p style="color:var(--white-dim);font-size:13px;">No products yet.</p>
-                @endforelse
+                    @endfor
+                @else
+                    <p style="color:var(--white-dim);font-size:13px;">No products yet.</p>
+                @endif
             </div>
         </div>
       </div>
@@ -91,24 +99,27 @@
         <table class="products-table">
           <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Old Price</th><th>Badge</th><th>Stock</th><th>Actions</th></tr></thead>
           <tbody id="productsTableBody">
-            @forelse($products as $p)
-            <tr>
-              <td><div class="prod-cell"><div class="prod-thumb">
-                @if($p->image) <img src="{{ Storage::url($p->image) }}" alt=""/> @else {{ $p->category->emoji ?? '📦' }} @endif
-              </div><div><div class="prod-name">{{ $p->name }}</div><div class="prod-brand">{{ $p->brand ?? '—' }}</div></div></div></td>
-              <td><span class="cat-pill">{{ $p->category->name ?? 'None' }}</span></td>
-              <td><span class="price-cell">${{ number_format($p->price) }}</span></td>
-              <td>{!! $p->old_price ? '<span class="old-price-cell">$'.number_format($p->old_price).'</span>' : '—' !!}</td>
-              <td>{!! $p->badge ? '<span class="badge badge-'.$p->badge.'">'.ucfirst($p->badge).'</span>' : '<span class="badge-none">—</span>' !!}</td>
-              <td><span class="stock-cell {{ $p->stock < 25 ? 'stock-low' : 'stock-ok' }}">{{ $p->stock }}</span></td>
-              <td><div class="actions-cell">
-                <button type="button" class="action-btn edit" onclick="openProductModal({{ $p }})"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button>
-                <button type="button" class="action-btn del" onclick="openDel('products', {{ $p->id }}, '{{ addslashes($p->name) }}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
-              </div></td>
-            </tr>
-            @empty
-            <div class="empty-state" id="prodEmptyState"><div class="empty-icon"><i data-lucide="inbox" style="width:48px;height:48px;"></i></div><div class="empty-title">No products found</div><div class="empty-sub">Add your first product.</div></div>
-            @endforelse
+            @if ($products && count($products) > 0)
+              @for ($i = 0; $i < count($products); $i++)
+              @php $p = $products[$i]; @endphp
+              <tr>
+                <td><div class="prod-cell"><div class="prod-thumb">
+                  @if($p->image) <img src="{{ \Illuminate\Support\Facades\Storage::url($p->image) }}" alt=""/> @else {{ $p->category->emoji ?? '📦' }} @endif
+                </div><div><div class="prod-name">{{ $p->name }}</div><div class="prod-brand">{{ $p->brand ?? '—' }}</div></div></div></td>
+                <td><span class="cat-pill">{{ $p->category->name ?? 'None' }}</span></td>
+                <td><span class="price-cell">${{ number_format($p->price) }}</span></td>
+                <td>{!! $p->old_price ? '<span class="old-price-cell">$'.number_format($p->old_price).'</span>' : '—' !!}</td>
+                <td>{!! $p->badge ? '<span class="badge badge-'.$p->badge.'">'.ucfirst($p->badge).'</span>' : '<span class="badge-none">—</span>' !!}</td>
+                <td><span class="stock-cell {{ $p->stock < 25 ? 'stock-low' : 'stock-ok' }}">{{ $p->stock }}</span></td>
+                <td><div class="actions-cell">
+                  <button type="button" class="action-btn edit" onclick="openProductModal({{ $p }})"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button>
+                  <button type="button" class="action-btn del" onclick="openDel('products', {{ $p->id }}, '{{ addslashes($p->name) }}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+                </div></td>
+              </tr>
+              @endfor
+            @else
+              <div class="empty-state" id="prodEmptyState"><div class="empty-icon"><i data-lucide="inbox" style="width:48px;height:48px;"></i></div><div class="empty-title">No products found</div><div class="empty-sub">Add your first product.</div></div>
+            @endif
           </tbody>
         </table>
       </div>
@@ -128,17 +139,20 @@
         </div>
       </header>
       <div class="categories-grid-manage" id="categoriesGrid">
-        @foreach($categories as $c)
-        <div class="cat-manage-card">
-            <div class="cat-manage-actions">
-                <button type="button" class="action-btn edit" onclick="openCatModal({{ $c }})"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button>
-                <button type="button" class="action-btn del" onclick="openDel('categories', {{ $c->id }}, '{{ addslashes($c->name) }}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
-            </div>
-            <div class="cat-manage-icon">{{ $c->emoji }}</div>
-            <div class="cat-manage-name">{{ $c->name }}</div>
-            <div class="cat-manage-count">{{ $c->products_count }} products</div>
-        </div>
-        @endforeach
+        @if ($categories && count($categories) > 0)
+            @for ($i = 0; $i < count($categories); $i++)
+                @php $c = $categories[$i]; @endphp
+                <div class="cat-manage-card">
+                    <div class="cat-manage-actions">
+                        <button type="button" class="action-btn edit" onclick="openCatModal({{ $c }})"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button>
+                        <button type="button" class="action-btn del" onclick="openDel('categories', {{ $c->id }}, '{{ addslashes($c->name) }}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+                    </div>
+                    <div class="cat-manage-icon">{{ $c->emoji }}</div>
+                    <div class="cat-manage-name">{{ $c->name }}</div>
+                    <div class="cat-manage-count">{{ $c->products_count }} products</div>
+                </div>
+            @endfor
+        @endif
       </div>
     </div>
 
@@ -150,30 +164,32 @@
       <div class="table-wrap">
         <table class="products-table">
           <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-          <tbody>
-            @forelse($orders as $o)
-            <tr>
-              <td><span style="font-weight:700;color:var(--accent);">#{{ $o->id }}</span></td>
-              <td><div class="prod-cell"><div><div class="prod-name">{{ $o->full_name }}</div><div class="prod-brand">{{ $o->email }}</div></div></div></td>
-              <td><span class="price-cell">${{ number_format($o->total_price) }}</span></td>
-              <td><span class="badge badge-{{ $o->status }}">{{ strtoupper($o->status) }}</span></td>
-              <td style="color:var(--white-dim)">{{ $o->created_at->format('M d, Y') }}</td>
-              <td>
-                <form action="{{ route('admin.orders.status', $o->id) }}" method="POST">
-                  @csrf
-                  <select name="status" onchange="this.form.submit()" style="background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:5px 10px;border-radius:4px;font-size:12px;outline:none;cursor:pointer;">
-                    <option value="pending" {{ $o->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="paid" {{ $o->status == 'paid' ? 'selected' : '' }}>Paid</option>
-                    <option value="shipped" {{ $o->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                    <option value="delivered" {{ $o->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                    <option value="cancelled" {{ $o->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                  </select>
-                </form>
-              </td>
-            </tr>
-            @empty
-            <div class="empty-state"><div class="empty-icon"><i data-lucide="shopping-bag" style="width:48px;height:48px;"></i></div><div class="empty-title">No orders yet</div></div>
-            @endforelse
+                @if ($orders && count($orders) > 0)
+              @for ($i = 0; $i < count($orders); $i++)
+              @php $o = $orders[$i]; @endphp
+              <tr>
+                <td><span style="font-weight:700;color:var(--accent);">#{{ $o->id }}</span></td>
+                <td><div class="prod-cell"><div><div class="prod-name">{{ $o->full_name }}</div><div class="prod-brand">{{ $o->email }}</div></div></div></td>
+                <td><span class="price-cell">${{ number_format($o->total_price) }}</span></td>
+                <td><span class="badge badge-{{ $o->status }}">{{ strtoupper($o->status) }}</span></td>
+                <td style="color:var(--white-dim)">{{ $o->created_at->format('M d, Y') }}</td>
+                <td>
+                  <form action="{{ route('admin.orders.status', $o->id) }}" method="POST">
+                    @csrf
+                    <select name="status" onchange="this.form.submit()" style="background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:5px 10px;border-radius:4px;font-size:12px;outline:none;cursor:pointer;">
+                      <option value="pending" {{ $o->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                      <option value="paid" {{ $o->status == 'paid' ? 'selected' : '' }}>Paid</option>
+                      <option value="shipped" {{ $o->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                      <option value="delivered" {{ $o->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                      <option value="cancelled" {{ $o->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    </select>
+                  </form>
+                </td>
+              </tr>
+              @endfor
+            @else
+              <div class="empty-state"><div class="empty-icon"><i data-lucide="shopping-bag" style="width:48px;height:48px;"></i></div><div class="empty-title">No orders yet</div></div>
+            @endif
           </tbody>
         </table>
       </div>
@@ -196,22 +212,25 @@
         <table class="products-table">
           <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
           <tbody id="usersTableBody">
-            @forelse($users as $u)
-            <tr>
-              <td><div class="prod-cell"><div class="admin-avatar" style="width:36px;height:36px;font-size:13px;">{{ substr($u->name, 0, 1) }}</div><div class="prod-name">{{ $u->name }}</div></div></td>
-              <td style="color:var(--white-dim)">{{ $u->email }}</td>
-              <td><span class="role-badge role-{{ strtolower($u->role) }}">{{ $u->role }}</span></td>
-              <td style="color:var(--white-dim)">{{ $u->created_at->format('Y-m-d') }}</td>
-              <td><div class="actions-cell">
-                <button type="button" class="action-btn edit" onclick="openUserModal({{ $u }})"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button>
-                @if(auth()->id() !== $u->id)
-                <button type="button" class="action-btn del" onclick="openDel('users', {{ $u->id }}, '{{ addslashes($u->name) }}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
-                @endif
-              </div></td>
-            </tr>
-            @empty
-            <div class="empty-state" id="usersEmptyState"><div class="empty-icon"><i data-lucide="users" style="width:48px;height:48px;"></i></div><div class="empty-title">No users yet</div></div>
-            @endforelse
+            @if ($users && count($users) > 0)
+              @for ($i = 0; $i < count($users); $i++)
+              @php $u = $users[$i]; @endphp
+              <tr>
+                <td><div class="prod-cell"><div class="admin-avatar" style="width:36px;height:36px;font-size:13px;">{{ substr($u->name, 0, 1) }}</div><div class="prod-name">{{ $u->name }}</div></div></td>
+                <td style="color:var(--white-dim)">{{ $u->email }}</td>
+                <td><span class="role-badge role-{{ strtolower($u->role) }}">{{ $u->role }}</span></td>
+                <td style="color:var(--white-dim)">{{ $u->created_at->format('Y-m-d') }}</td>
+                <td><div class="actions-cell">
+                  <button type="button" class="action-btn edit" onclick="openUserModal({{ $u }})"><i data-lucide="edit-3" style="width:14px;height:14px;"></i></button>
+                  @if(auth()->id() !== $u->id)
+                  <button type="button" class="action-btn del" onclick="openDel('users', {{ $u->id }}, '{{ addslashes($u->name) }}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+                  @endif
+                </div></td>
+              </tr>
+              @endfor
+            @else
+              <div class="empty-state" id="usersEmptyState"><div class="empty-icon"><i data-lucide="users" style="width:48px;height:48px;"></i></div><div class="empty-title">No users yet</div></div>
+            @endif
           </tbody>
         </table>
       </div>
@@ -236,9 +255,12 @@
             <div class="form-grid">
             <div class="form-group full"><label class="form-label">Product Name *</label><input type="text" name="name" class="form-input" id="fieldName" placeholder="e.g. PlayStation 5 Pro" required/></div>
             <div class="form-group"><label class="form-label">Category *</label><select name="category_id" class="form-input" id="fieldCategory" required>
-                @foreach($categories as $c)
+            @if ($categories && count($categories) > 0)
+                @for ($i = 0; $i < count($categories); $i++)
+                    @php $c = $categories[$i]; @endphp
                     <option value="{{ $c->id }}">{{ $c->emoji }} {{ $c->name }}</option>
-                @endforeach
+                @endfor
+            @endif
             </select></div>
             <div class="form-group"><label class="form-label">Brand</label><input type="text" name="brand" class="form-input" id="fieldBrand" placeholder="e.g. Sony"/></div>
             <div class="form-group"><label class="form-label">Price ($) *</label><input type="number" step="0.01" name="price" class="form-input" id="fieldPrice" placeholder="499" required/></div>

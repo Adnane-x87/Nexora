@@ -63,16 +63,18 @@
       <a href="{{ route('shop') }}" class="section-link">All categories →</a>
     </div>
     <div class="categories-grid" id="categoriesGrid">
-      @php $topCats = $categories->take(6); @endphp
-      @forelse($topCats as $cat)
-        <a href="{{ route('shop', ['category' => $cat->slug]) }}" class="category-card" style="text-decoration:none;">
-          <div class="cat-icon">{{ $cat->emoji }}</div>
-          <div class="cat-name" style="color:var(--white);font-weight:600;">{{ $cat->name }}</div>
-          <div class="cat-count" style="color:var(--white-dim);font-size:13px;margin-top:4px;">{{ $cat->products_count }} Products</div>
-        </a>
-      @empty
+      @if ($topCategories && count($topCategories) > 0)
+        @for ($i = 0; $i < count($topCategories); $i++)
+          @php $cat = $topCategories[$i]; @endphp
+          <a href="{{ route('shop', ['category' => $cat->slug]) }}" class="category-card" style="text-decoration:none;">
+            <div class="cat-icon">{{ $cat->emoji }}</div>
+            <div class="cat-name" style="color:var(--white);font-weight:600;">{{ $cat->name }}</div>
+            <div class="cat-count" style="color:var(--white-dim);font-size:13px;margin-top:4px;">{{ $cat->products_count }} Products</div>
+          </a>
+        @endfor
+      @else
         <p style="color:var(--white-dim);">No categories available.</p>
-      @endforelse
+      @endif
     </div>
   </section>
 
@@ -83,41 +85,44 @@
       <a href="{{ route('shop') }}" class="section-link">View all →</a>
     </div>
     <div class="products-grid" id="productsGrid">
-      @forelse($featuredProducts as $fp)
-        <div class="product-card">
-          @if($fp->badge)<span class="tag {{ $fp->badge }}">{{ ucfirst($fp->badge) }}</span>@endif
-          @auth
-          <form action="{{ route('wishlist.toggle', $fp->id) }}" method="POST" class="wishlist-form">
-            @csrf
-            <button type="submit" class="wishlist-btn {{ auth()->user()->wishlistedProducts->contains($fp->id) ? 'active' : '' }}">
-                <i data-lucide="heart" style="width:16px;height:16px;"></i>
-            </button>
-          </form>
-          @else
-          <div class="wishlist-btn" onclick="window.location='{{ route('login') }}'"><i data-lucide="heart" style="width:16px;height:16px;"></i></div>
-          @endauth
+      @if ($featuredProducts && count($featuredProducts) > 0)
+        @for ($i = 0; $i < count($featuredProducts); $i++)
+          @php $fp = $featuredProducts[$i]; @endphp
+          <div class="product-card">
+            @if($fp->badge)<span class="tag {{ $fp->badge }}">{{ ucfirst($fp->badge) }}</span>@endif
+            @auth
+            <form action="{{ route('wishlist.toggle', $fp->id) }}" method="POST" class="wishlist-form">
+              @csrf
+              <button type="submit" class="wishlist-btn {{ auth()->user()->wishlistedProducts->contains($fp->id) ? 'active' : '' }}">
+                  <i data-lucide="heart" style="width:16px;height:16px;"></i>
+              </button>
+            </form>
+            @else
+            <div class="wishlist-btn" onclick="window.location='{{ route('login') }}'"><i data-lucide="heart" style="width:16px;height:16px;"></i></div>
+            @endauth
 
-          <a href="{{ route('product.show', $fp->slug) }}" class="product-img-wrap" style="text-decoration:none;">
-            @if($fp->image)<img src="{{ Storage::url($fp->image) }}" alt="" style="width:100%;height:100%;object-fit:cover;"/>@else <div style="font-size:48px;display:flex;align-items:center;justify-content:center;height:100%;">{{ $fp->category->emoji ?? '📦' }}</div> @endif
-          </a>
-          <div class="product-info">
-            <div class="product-brand">{{ $fp->brand ?? '' }}</div>
-            <a href="{{ route('product.show', $fp->slug) }}" class="product-name" style="text-decoration:none;color:var(--white);">{{ $fp->name }}</a>
-            <div class="product-rating"><span class="s">★★★★★</span> 4.9</div>
-            <div class="product-footer">
-              <div class="price-wrap">
-                <span class="price-new">${{ number_format($fp->price) }}</span>
-                @if($fp->old_price)<span class="price-old">${{ number_format($fp->old_price) }}</span>@endif
+            <a href="{{ route('product.show', $fp->slug) }}" class="product-img-wrap" style="text-decoration:none;">
+              @if($fp->image)<img src="{{ \Illuminate\Support\Facades\Storage::url($fp->image) }}" alt="" style="width:100%;height:100%;object-fit:cover;"/>@else <div style="font-size:48px;display:flex;align-items:center;justify-content:center;height:100%;">{{ $fp->category->emoji ?? '📦' }}</div> @endif
+            </a>
+            <div class="product-info">
+              <div class="product-brand">{{ $fp->brand ?? '' }}</div>
+              <a href="{{ route('product.show', $fp->slug) }}" class="product-name" style="text-decoration:none;color:var(--white);">{{ $fp->name }}</a>
+              <div class="product-rating"><span class="s">★★★★★</span> 4.9</div>
+              <div class="product-footer">
+                <div class="price-wrap">
+                  <span class="price-new">${{ number_format($fp->price) }}</span>
+                  @if($fp->old_price)<span class="price-old">${{ number_format($fp->old_price) }}</span>@endif
+                </div>
+                @auth
+                <button class="add-cart-btn"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
+                @endauth
               </div>
-              @auth
-              <button class="add-cart-btn"><i data-lucide="plus" style="width:16px;height:16px;"></i></button>
-              @endauth
             </div>
           </div>
-        </div>
-      @empty
+        @endfor
+      @else
         <p style="color:var(--white-dim);">No featured products yet.</p>
-      @endforelse
+      @endif
     </div>
   </section>
 

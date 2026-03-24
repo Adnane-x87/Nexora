@@ -26,34 +26,37 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($orders as $o)
-                    <tr>
-                        <td>#{{ $o->id }}</td>
-                        <td>
-                            <div class="cust-info">
-                                <strong>{{ $o->full_name }}</strong>
-                                <span>{{ $o->email }}</span>
-                            </div>
-                        </td>
-                        <td>${{ number_format($o->total_price) }}</td>
-                        <td>
-                            <span class="status-badge {{ $o->status }}">{{ strtoupper($o->status) }}</span>
-                        </td>
-                        <td>{{ $o->created_at->format('M d, Y') }}</td>
-                        <td>
-                            <form action="{{ route('admin.orders.status', $o->id) }}" method="POST" class="status-form">
-                                @csrf
-                                <select name="status" onchange="this.form.submit()">
-                                    <option value="pending" {{ $o->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="paid" {{ $o->status == 'paid' ? 'selected' : '' }}>Paid</option>
-                                    <option value="shipped" {{ $o->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                                    <option value="delivered" {{ $o->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                                    <option value="cancelled" {{ $o->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                </select>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
+                    @if ($orders && count($orders) > 0)
+                        @for ($i = 0; $i < count($orders); $i++)
+                            @php $o = $orders[$i]; @endphp
+                            <tr>
+                                <td>#{{ $o->id }}</td>
+                                <td>
+                                    <div class="cust-info">
+                                        <strong>{{ $o->full_name }}</strong>
+                                        <span>{{ $o->email }}</span>
+                                    </div>
+                                </td>
+                                <td>${{ number_format($o->total_price) }}</td>
+                                <td>
+                                    <span class="status-badge {{ $o->status }}">{{ strtoupper($o->status) }}</span>
+                                </td>
+                                <td>{{ $o->created_at->format('M d, Y') }}</td>
+                                <td>
+                                    <form action="{{ route('admin.orders.status', $o->id) }}" method="POST" class="status-form">
+                                        @csrf
+                                        <select name="status" onchange="this.form.submit()">
+                                            <option value="pending" {{ $o->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                            <option value="paid" {{ $o->status == 'paid' ? 'selected' : '' }}>Paid</option>
+                                            <option value="shipped" {{ $o->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                                            <option value="delivered" {{ $o->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                            <option value="cancelled" {{ $o->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endfor
+                    @endif
                 </tbody>
             </table>
             <div class="pagination-wrap">

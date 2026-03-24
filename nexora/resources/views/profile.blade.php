@@ -32,7 +32,9 @@
 
             @if($wishlist->count() > 0)
                 <div class="products-grid">
-                    @foreach($wishlist as $p)
+                @if ($wishlist && count($wishlist) > 0)
+                    @for ($i = 0; $i < count($wishlist); $i++)
+                        @php $p = $wishlist[$i]; @endphp
                         <div class="product-card">
                             @if($p->badge)<span class="tag {{ $p->badge }}">{{ ucfirst($p->badge) }}</span>@endif
                             
@@ -44,7 +46,7 @@
                             </form>
 
                             <a href="{{ route('product.show', $p->slug) }}" class="product-img-wrap" style="text-decoration:none;">
-                                @if($p->image)<img src="{{ Storage::url($p->image) }}" alt="" style="width:100%;height:100%;object-fit:cover;"/>@else <div style="font-size:48px;display:flex;align-items:center;justify-content:center;height:100%;">{{ $p->category->emoji ?? '📦' }}</div> @endif
+                                @if($p->image)<img src="{{ \Illuminate\Support\Facades\Storage::url($p->image) }}" alt="" style="width:100%;height:100%;object-fit:cover;"/>@else <div style="font-size:48px;display:flex;align-items:center;justify-content:center;height:100%;">{{ $p->category->emoji ?? '📦' }}</div> @endif
                             </a>
                             <div class="product-info">
                                 <div class="product-brand">{{ $p->brand ?? '' }}</div>
@@ -84,45 +86,51 @@
 
             @if($orders->count() > 0)
                 <div class="orders-list" style="display: flex; flex-direction: column; gap: 20px;">
-                    @foreach($orders as $o)
-                        <div class="order-card" style="background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 30px;">
-                            <div class="order-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
-                                <div>
-                                    <div style="font-size: 14px; color: var(--white-dim); margin-bottom: 4px;">Order ID</div>
-                                    <div style="font-weight: 700; color: var(--accent);">#{{ $o->id }}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 14px; color: var(--white-dim); margin-bottom: 4px;">Date</div>
-                                    <div style="color: var(--white);">{{ $o->created_at->format('M d, Y') }}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 14px; color: var(--white-dim); margin-bottom: 4px;">Total</div>
-                                    <div style="font-weight: 700; color: var(--white);">${{ number_format($o->total_price) }}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 14px; color: var(--white-dim); margin-bottom: 4px;">Status</div>
-                                    <span class="status-badge {{ $o->status }}" style="padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase;">{{ $o->status }}</span>
-                                </div>
-                            </div>
-                            <div class="order-items" style="display: grid; gap: 15px;">
-                                @foreach($o->items as $item)
-                                    <div class="order-item" style="display: flex; align-items: center; gap: 15px;">
-                                        <div style="width: 50px; height: 50px; background: var(--bg3); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border);">
-                                            @if($item->product->image)
-                                                <img src="{{ Storage::url($item->product->image) }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
-                                            @else
-                                                <span>📦</span>
-                                            @endif
-                                        </div>
-                                        <div style="flex: 1;">
-                                            <div style="color: var(--white); font-weight: 500; font-size: 14px;">{{ $item->product->name }}</div>
-                                            <div style="color: var(--white-dim); font-size: 12px;">Qty: {{ $item->quantity }} × ${{ number_format($item->price) }}</div>
-                                        </div>
+                    @if ($orders && count($orders) > 0)
+                        @for ($i = 0; $i < count($orders); $i++)
+                            @php $o = $orders[$i]; @endphp
+                            <div class="order-card" style="background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 30px;">
+                                <div class="order-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                                    <div>
+                                        <div style="font-size: 14px; color: var(--white-dim); margin-bottom: 4px;">Order ID</div>
+                                        <div style="font-weight: 700; color: var(--accent);">#{{ $o->id }}</div>
                                     </div>
-                                @endforeach
+                                    <div>
+                                        <div style="font-size: 14px; color: var(--white-dim); margin-bottom: 4px;">Date</div>
+                                        <div style="color: var(--white);">{{ $o->created_at->format('M d, Y') }}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 14px; color: var(--white-dim); margin-bottom: 4px;">Total</div>
+                                        <div style="font-weight: 700; color: var(--white);">${{ number_format($o->total_price) }}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 14px; color: var(--white-dim); margin-bottom: 4px;">Status</div>
+                                        <span class="status-badge {{ $o->status }}" style="padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase;">{{ $o->status }}</span>
+                                    </div>
+                                </div>
+                                <div class="order-items" style="display: grid; gap: 15px;">
+                                    @if ($o->items && count($o->items) > 0)
+                                        @for ($j = 0; $j < count($o->items); $j++)
+                                            @php $item = $o->items[$j]; @endphp
+                                            <div class="order-item" style="display: flex; align-items: center; gap: 15px;">
+                                                <div style="width: 50px; height: 50px; background: var(--bg3); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border);">
+                                                    @if($item->product->image)
+                                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($item->product->image) }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    @else
+                                                        <span>📦</span>
+                                                    @endif
+                                                </div>
+                                                <div style="flex: 1;">
+                                                    <div style="color: var(--white); font-weight: 500; font-size: 14px;">{{ $item->product->name }}</div>
+                                                    <div style="color: var(--white-dim); font-size: 12px;">Qty: {{ $item->quantity }} × ${{ number_format($item->price) }}</div>
+                                                </div>
+                                            </div>
+                                        @endfor
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endfor
+                    @endif
                 </div>
             @else
                 <div class="empty-orders" style="text-align: center; padding: 60px 20px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); border-style: dashed;">

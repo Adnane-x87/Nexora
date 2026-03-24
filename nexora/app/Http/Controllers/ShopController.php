@@ -12,7 +12,8 @@ class ShopController extends Controller
     {
         $categories = Category::withCount('products')->get();
         $featuredProducts = Product::with('category')->inRandomOrder()->limit(8)->get();
-        return view('index', compact('categories', 'featuredProducts'));
+        $topCategories = $categories->take(6);
+        return view('index', compact('categories', 'featuredProducts', 'topCategories'));
     }
 
     public function shop(Request $request)
@@ -32,13 +33,11 @@ class ShopController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('brand', 'like', "%{$search}%");
-            });
+            $query->where(fn($q) => $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%"));
         }
 
-        switch ($request->get('sort')) {
+        switch ($request->input('sort')) {
             case 'price-asc':
                 $query->orderBy('price', 'asc');
                 break;

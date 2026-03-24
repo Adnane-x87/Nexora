@@ -58,15 +58,18 @@
                 <div class="summary-card sticky-card">
                     <h3 class="summary-title">Order Summary</h3>
                     <div class="checkout-items">
-                        @foreach($products as $p)
-                            <div class="checkout-item">
-                                <span class="ci-badge">{{ $p->quantity }}</span>
-                                <div class="ci-details">
-                                    <span class="ci-n">{{ $p->name }}</span>
-                                    <span class="ci-p">${{ number_format($p->price) }}</span>
+                        @if ($products && count($products) > 0)
+                            @for ($i = 0; $i < count($products); $i++)
+                                @php $p = $products[$i]; @endphp
+                                <div class="checkout-item">
+                                    <span class="ci-badge">{{ $p->quantity }}</span>
+                                    <div class="ci-details">
+                                        <span class="ci-n">{{ $p->name }}</span>
+                                        <span class="ci-p">${{ number_format($p->price) }}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endfor
+                        @endif
                     </div>
                     <div class="summary-divider"></div>
                     <div class="summary-row">

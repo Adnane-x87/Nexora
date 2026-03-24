@@ -89,7 +89,7 @@
             <div class="product-visual-column">
                 <div class="main-image-wrap">
                     @if($product->image)
-                        <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="main-image">
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="main-image">
                     @else
                         <div class="image-placeholder">
                             <span style="font-size:120px;">{{ $product->category->emoji ?? '📦' }}</span>
@@ -97,7 +97,7 @@
                     @endif
                 </div>
                 <div class="image-thumbnails">
-                    <div class="thumb active"><img src="{{ Storage::url($product->image) }}" alt=""></div>
+                    <div class="thumb active"><img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt=""></div>
                     <!-- Mock thumbnails for UI -->
                     <div class="thumb"></div>
                     <div class="thumb"></div>
@@ -110,29 +110,32 @@
         <section class="related-products">
             <h2 class="section-title">You Might Also Like</h2>
             <div class="products-grid">
-                @foreach($relatedProducts as $rp)
-                <div class="product-card">
-                    @if($rp->badge)<span class="tag {{ $rp->badge }}">{{ ucfirst($rp->badge) }}</span>@endif
-                    <a href="{{ route('product.show', $rp->slug) }}" class="product-img-wrap" style="text-decoration:none;">
-                        @if($rp->image)<img src="{{ Storage::url($rp->image) }}" alt=""/>@else <div style="font-size:48px;display:flex;align-items:center;justify-content:center;height:100%;">{{ $rp->category->emoji ?? '📦' }}</div> @endif
-                    </a>
-                    <div class="product-info">
-                        <div class="product-brand">{{ $rp->brand }}</div>
-                        <a href="{{ route('product.show', $rp->slug) }}" class="product-name" style="text-decoration:none;color:var(--white);">{{ $rp->name }}</a>
-                        <div class="product-footer">
-                            <span class="price-new">${{ number_format($rp->price) }}</span>
-                            @auth
-                            <form action="{{ route('wishlist.toggle', $rp->id) }}" method="POST" style="margin-left:auto;">
-                                @csrf
-                                <button type="submit" class="wishlist-btn-small {{ auth()->user()->wishlistedProducts->contains($rp->id) ? 'active' : '' }}">
-                                    <i data-lucide="heart" style="width:14px;height:14px;"></i>
-                                </button>
-                            </form>
-                            @endauth
+                @if ($relatedProducts && count($relatedProducts) > 0)
+                    @for ($i = 0; $i < count($relatedProducts); $i++)
+                        @php $rp = $relatedProducts[$i]; @endphp
+                        <div class="product-card">
+                            @if($rp->badge)<span class="tag {{ $rp->badge }}">{{ ucfirst($rp->badge) }}</span>@endif
+                            <a href="{{ route('product.show', $rp->slug) }}" class="product-img-wrap" style="text-decoration:none;">
+                                @if($rp->image)<img src="{{ \Illuminate\Support\Facades\Storage::url($rp->image) }}" alt=""/>@else <div style="font-size:48px;display:flex;align-items:center;justify-content:center;height:100%;">{{ $rp->category->emoji ?? '📦' }}</div> @endif
+                            </a>
+                            <div class="product-info">
+                                <div class="product-brand">{{ $rp->brand }}</div>
+                                <a href="{{ route('product.show', $rp->slug) }}" class="product-name" style="text-decoration:none;color:var(--white);">{{ $rp->name }}</a>
+                                <div class="product-footer">
+                                    <span class="price-new">${{ number_format($rp->price) }}</span>
+                                    @auth
+                                    <form action="{{ route('wishlist.toggle', $rp->id) }}" method="POST" style="margin-left:auto;">
+                                        @csrf
+                                        <button type="submit" class="wishlist-btn-small {{ auth()->user()->wishlistedProducts->contains($rp->id) ? 'active' : '' }}">
+                                            <i data-lucide="heart" style="width:14px;height:14px;"></i>
+                                        </button>
+                                    </form>
+                                    @endauth
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                @endforeach
+                    @endfor
+                @endif
             </div>
         </section>
         @endif

@@ -86,7 +86,7 @@ class CheckoutController extends Controller
 
     public function success(Request $request)
     {
-        $sessionId = $request->get('session_id');
+        $sessionId = $request->input('session_id');
         if (!$sessionId) return redirect()->route('home');
 
         Stripe::setApiKey(config('services.stripe.secret'));

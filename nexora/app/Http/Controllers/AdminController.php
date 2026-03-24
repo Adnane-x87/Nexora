@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -22,11 +23,9 @@ class AdminController extends Controller
 
         if ($search) {
             $categoriesQuery->where('name', 'like', "%{$search}%");
-            $productsQuery->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+            $productsQuery->where(fn($q) => $q->where('name', 'like', "%{$search}%")
                   ->orWhere('brand', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
+                  ->orWhere('description', 'like', "%{$search}%"));
         }
 
         $categories = $categoriesQuery->get();
@@ -38,7 +37,8 @@ class AdminController extends Controller
             session(['activeTab' => $request->activeTab]);
         }
 
-        return view('admin.dashboard', compact('categories', 'products', 'users', 'orders'));
+        $recentProducts = $products->take(5)->all();
+        return view('admin.dashboard', compact('categories', 'products', 'users', 'orders', 'recentProducts'));
     }
 
     // --- CATEGORIES ---
@@ -143,7 +143,7 @@ class AdminController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'role' => 'required|in:Admin,Editor,Viewer',
         ]);
-        $validated['password'] = \Illuminate\Support\Facades\Hash::make('password'); // Default setup
+        $validated['password'] = Hash::make('password'); // Default setup
 
         User::create($validated);
         return back()->with('success', 'User added!')->with('activeTab', 'users');
