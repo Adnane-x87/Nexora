@@ -219,3 +219,18 @@ footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 8
   cursor: pointer; transition: border-color 0.2s, color 0.2s;
 }
 .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* PROMO SECTION */
+.promo-section { margin: 80px 0; padding: 0 20px; }
+.promo-banner { background: linear-gradient(135deg, #1a1c2c 0%, #0d0e14 100%); border: 1px solid var(--border); border-radius: 24px; padding: 60px; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
+.promo-banner::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); pointer-events: none; }
+.promo-tag { color: var(--accent); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+.promo-title { font-family: var(--font-display); font-size: 48px; font-weight: 800; line-height: 1.1; color: var(--white); margin-bottom: 24px; }
+.promo-prices { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.old-price { color: var(--white); text-decoration: line-through; font-size: 24px; font-weight: 500; }
+.new-price { color: var(--accent); font-size: 36px; font-weight: 800; }
+.promo-sub { color: var(--white-dim); font-size: 16px; }
+.promo-banner .btn-dark { padding: 18px 36px; font-size: 18px; font-weight: 700; border-radius: 12px; transition: transform 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.promo-banner .btn-dark:hover { transform: translateX(10px); }
+@media (max-width: 768px) { .promo-banner { flex-direction: column; text-align: center; padding: 40px; gap: 40px; } .promo-title { font-size: 32px; } .promo-prices { justify-content: center; } }
+

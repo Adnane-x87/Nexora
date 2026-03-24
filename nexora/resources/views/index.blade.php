@@ -135,12 +135,16 @@
   <!-- PROMO BANNER -->
   <div class="promo-section fade-up">
     <div class="promo-banner">
-      <div>
+      <div class="promo-content">
         <div class="promo-tag">⚡ Limited time offer</div>
         <div class="promo-title">UP TO 40% OFF<br>ON AUDIO GEAR</div>
+        <div class="promo-prices">
+            <span class="old-price">$332</span>
+            <span class="new-price">$111</span>
+        </div>
         <div class="promo-sub">Ends March 31 · Free shipping included</div>
       </div>
-      <button class="btn-dark">Grab the Deal →</button>
+      <a href="{{ route('product.show', 'sony-wh-1000xm5') }}" class="btn-dark">Grab the Deal →</a>
     </div>
   </div>
 

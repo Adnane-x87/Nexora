@@ -17,8 +17,8 @@ class StripeWebhookController extends Controller
         $sigHeader = $request->header('stripe-signature');
         $endpointSecret = config('services.stripe.webhook_secret'); // We'll need to add this to .env
 
-        if (!$endpointSecret) {
-            Log::error('Stripe webhook error: missing endpoint secret.');
+        if (!$endpointSecret || str_contains($endpointSecret, 'placeholder')) {
+            Log::error('Stripe webhook error: missing or placeholder endpoint secret.');
             return response()->json(['error' => 'Webhook secret not configured'], 400);
         }
 
@@ -57,25 +57,25 @@ class StripeWebhookController extends Controller
 
     private function handlePaymentIntentSucceeded($paymentIntent)
     {
-        $order = Order::where('payment_intent_id', $paymentIntent->id)->first();
-        
-        if ($order) {
-            $order->status = 'paid';
-            $order->save();
-            Log::info("Order {$order->id} paid successfully via Webhook.");
+        // Atomic update — only update if still pending (idempotency guard)
+        $updated = Order::where('payment_intent_id', $paymentIntent->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'paid']);
+
+        if ($updated) {
+            Log::info("Order paid successfully for Intent ID: {$paymentIntent->id}");
         } else {
-            Log::warning("Payment succeeded but order not found for Intent ID: {$paymentIntent->id}");
+            Log::info("Webhook received but order already processed for Intent ID: {$paymentIntent->id}");
         }
     }
 
     private function handlePaymentIntentFailed($paymentIntent)
     {
-        $order = Order::where('payment_intent_id', $paymentIntent->id)->first();
-        
-        if ($order) {
-            $order->status = 'cancelled'; // or 'failed' based on your ENUM
-            $order->save();
-            Log::info("Order {$order->id} payment failed via Webhook.");
-        }
+        // Atomic update — idempotent
+        Order::where('payment_intent_id', $paymentIntent->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'cancelled']);
+
+        Log::info("Payment failed for Intent ID: {$paymentIntent->id}");
     }
 }

@@ -14,6 +14,13 @@ Route::get('/', [ShopController::class, 'index'])->name('home');
 Route::get('/shop', [ShopController::class, 'shop'])->name('shop');
 Route::get('/product/{slug}', [ShopController::class, 'show'])->name('product.show');
 
+// Auth routes with rate limiting
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1')->name('login.post');
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1')->name('register.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 Route::middleware('auth')->group(function () {
     Route::post('/wishlist/toggle/{product}', [ShopController::class, 'toggleWishlist'])->name('wishlist.toggle');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');

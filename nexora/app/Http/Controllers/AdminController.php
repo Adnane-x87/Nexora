@@ -129,7 +129,8 @@ class AdminController extends Controller
     public function destroyProduct(Product $product)
     {
         if ($product->image) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $product->image));
+            // image is stored as a relative path like 'products/file.jpg'
+            Storage::disk('public')->delete($product->image);
         }
         $product->delete();
         return back()->with('success', 'Product deleted!')->with('activeTab', 'products');
@@ -143,10 +144,11 @@ class AdminController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'role' => 'required|in:Admin,Editor,Viewer',
         ]);
-        $validated['password'] = Hash::make('password'); // Default setup
+        // Generate secure random password — admin should send credentials to user
+        $validated['password'] = Hash::make(\Illuminate\Support\Str::random(16));
 
         User::create($validated);
-        return back()->with('success', 'User added!')->with('activeTab', 'users');
+        return back()->with('success', 'User added! A secure password was generated. Send the reset link to the user.')->with('activeTab', 'users');
     }
 
     public function updateUser(Request $request, User $user)
@@ -177,6 +179,9 @@ class AdminController extends Controller
 
     public function updateOrderStatus(Request $request, Order $order)
     {
+        $request->validate([
+            'status' => 'required|in:pending,paid,processing,shipped,cancelled',
+        ]);
         $order->update(['status' => $request->status]);
         return back()->with('success', 'Order status updated!');
     }

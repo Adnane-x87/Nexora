@@ -6,8 +6,8 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Stripe\Stripe;
-use Stripe\Checkout\Session;
 
 class CheckoutController extends Controller
 {
@@ -18,18 +18,20 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $products = [];
+        $productIds = array_keys($cart);
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
         $total = 0;
+
         foreach ($cart as $id => $qty) {
-            $product = Product::find($id);
+            $product = $products->get($id);
             if ($product) {
                 $product->quantity = $qty;
-                $products[] = $product;
-                $total += $product->price * $qty;
+                $total += (int) round($product->price * 100) * $qty;
             }
         }
 
-        return view('checkout', compact('products', 'total'));
+        $displayTotal = $total / 100; // cents → dollars for view
+        return view('checkout', compact('products', 'displayTotal'))->with('total', $displayTotal);
     }
 
     public function process(Request $request)
@@ -48,13 +50,18 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $total = 0;
+        // Bulk-load products (avoid N+1)
+        $productIds = array_keys($cart);
+        $cartProducts = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        $totalCents = 0;
         foreach ($cart as $id => $qty) {
-            $product = Product::find($id);
+            $product = $cartProducts->get($id);
             if ($product) {
-                $total += $product->price * $qty;
+                $totalCents += (int) round($product->price * 100) * $qty;
             }
         }
+        $total = $totalCents / 100; // dollars for display/storage
 
         $stripeSecret = config('services.stripe.secret');
         if (!$stripeSecret || $stripeSecret === 'sk_test_placeholder') {
@@ -64,47 +71,44 @@ class CheckoutController extends Controller
         Stripe::setApiKey($stripeSecret);
 
         try {
-            // Create PaymentIntent
+            // Create PaymentIntent with amount in cents (integer)
             $paymentIntent = \Stripe\PaymentIntent::create([
-                'amount' => $total * 100, // Amount in cents
+                'amount' => $totalCents, // integer cents — no float math
                 'currency' => 'usd',
-                'automatic_payment_methods' => [
-                    'enabled' => true,
-                ],
-                // We add metadata to link the intent to our user
-                'metadata' => [
+                'automatic_payment_methods' => ['enabled' => true],
+                'metadata' => ['user_id' => auth()->id()],
+            ]);
+
+            // Wrap order + items in a transaction to prevent orphaned records
+            $order = DB::transaction(function () use ($cart, $cartProducts, $total, $paymentIntent, $request) {
+                $order = Order::create([
                     'user_id' => auth()->id(),
-                ],
-            ]);
+                    'status' => 'pending',
+                    'total_price' => $total,
+                    'payment_intent_id' => $paymentIntent->id,
+                    'full_name' => $request->full_name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'address' => $request->address,
+                    'city' => $request->city,
+                    'postal_code' => $request->postal_code,
+                ]);
 
-            // Create Pending Order
-            $order = Order::create([
-                'user_id' => auth()->id(),
-                'status' => 'pending',
-                'total_price' => $total,
-                'payment_intent_id' => $paymentIntent->id,
-                'full_name' => $request->full_name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'city' => $request->city,
-                'postal_code' => $request->postal_code,
-            ]);
-
-            // Create Order Items
-            foreach ($cart as $id => $qty) {
-                $product = Product::find($id);
-                if ($product) {
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $product->id,
-                        'quantity' => $qty,
-                        'price' => $product->price,
-                    ]);
+                foreach ($cart as $id => $qty) {
+                    $product = $cartProducts->get($id);
+                    if ($product) {
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'product_id' => $product->id,
+                            'quantity' => $qty,
+                            'price' => $product->price,
+                        ]);
+                    }
                 }
-            }
 
-            // Save essential data to session for the next step
+                return $order;
+            });
+
             session()->put('checkout_client_secret', $paymentIntent->client_secret);
             session()->put('checkout_order_id', $order->id);
 
@@ -131,9 +135,6 @@ class CheckoutController extends Controller
 
     public function success(Request $request)
     {
-        // The actual order status update is handled by the webhook.
-        // This is purely the success page UI.
-
         $paymentIntentId = $request->query('payment_intent');
         if (!$paymentIntentId) {
             return redirect()->route('home');
@@ -145,10 +146,14 @@ class CheckoutController extends Controller
             return redirect()->route('home');
         }
 
-        // Clear the cart now that checkout is mathematically successful from user's perspective
-        session()->forget('cart');
-        session()->forget(['checkout_client_secret', 'checkout_order_id']);
+        // Only clear cart if payment was actually confirmed (webhook may already have fired)
+        if ($order->status === 'paid') {
+            session()->forget('cart');
+            session()->forget(['checkout_client_secret', 'checkout_order_id']);
+            return view('checkout-success', compact('order'));
+        }
 
+        // Payment not yet confirmed — show a pending page
         return view('checkout-success', compact('order'));
     }
 
