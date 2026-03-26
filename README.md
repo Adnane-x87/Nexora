@@ -1,7 +1,5 @@
 # NEXORA — Next-Gen Electronics
 
-![NEXORA Banner](https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg)
-
 **NEXORA** is a premium, next-generation e-commerce platform for high-end electronics. Built with a focus on speed, security, and a seamless user experience, it features a modern vanilla JS frontend and a robust Laravel 13 backend.
 
 ## 🚀 Key Features
