@@ -63,8 +63,7 @@
                     <h3 class="summary-title">Order Summary</h3>
                     <div class="checkout-items">
                         @if ($products && count($products) > 0)
-                            @for ($i = 0; $i < count($products); $i++)
-                                @php $p = $products[$i]; @endphp
+                            @foreach ($products as $p)
                                 <div class="checkout-item">
                                     <span class="ci-badge">{{ $p->quantity }}</span>
                                     <div class="ci-details">
@@ -72,7 +71,7 @@
                                         <span class="ci-p">${{ number_format($p->price) }}</span>
                                     </div>
                                 </div>
-                            @endfor
+                            @endforeach
                         @endif
                     </div>
                     <div class="summary-divider"></div>
