@@ -28,7 +28,17 @@
             @if ($categories && count($categories) > 0)
               @for ($i = 0; $i < count($categories); $i++)
                 @php $c = $categories[$i]; @endphp
-                <label class="check-item"><input type="radio" name="category" value="{{ $c->slug }}" {{ request('category') == $c->slug ? 'checked' : '' }} onchange="this.form.submit()"/> <span>{{ $c->emoji }} {{ $c->name }} ({{ $c->products_count }})</span></label>
+                @php
+                  $catKey = \Illuminate\Support\Str::slug($c->name);
+                  $catIcon = match ($catKey) {
+                      'phone', 'phones', 'smartphone', 'smartphones' => 'smartphone',
+                      'laptop', 'laptops' => 'laptop',
+                      'gaming', 'games' => 'gamepad-2',
+                      'computer-hardware', 'hardware', 'components', 'computer-components' => 'cpu',
+                      default => 'package',
+                  };
+                @endphp
+                <label class="check-item"><input type="radio" name="category" value="{{ $c->slug }}" {{ request('category') == $c->slug ? 'checked' : '' }} onchange="this.form.submit()"/> <span><i data-lucide="{{ $catIcon }}" style="width:14px;height:14px;"></i> {{ $c->name }} ({{ $c->products_count }})</span></label>
               @endfor
             @endif
         </div>
@@ -36,10 +46,10 @@
       <div class="sidebar-block">
         <div class="sidebar-block-title">Badge</div>
         <div class="badge-filters">
-          <label class="check-item"><input type="radio" name="badge" value="" {{ !request('badge') ? 'checked' : '' }} onchange="this.form.submit()"/> <span class="tag" style="font-size:10px;">All</span></label>
-          <label class="check-item"><input type="radio" name="badge" value="new" {{ request('badge') == 'new' ? 'checked' : '' }} onchange="this.form.submit()"/> <span class="tag new" style="font-size:10px;">New</span></label>
-          <label class="check-item"><input type="radio" name="badge" value="sale" {{ request('badge') == 'sale' ? 'checked' : '' }} onchange="this.form.submit()"/> <span class="tag sale" style="font-size:10px;">Sale</span></label>
-          <label class="check-item"><input type="radio" name="badge" value="hot" {{ request('badge') == 'hot' ? 'checked' : '' }} onchange="this.form.submit()"/> <span class="tag hot" style="font-size:10px;">Hot</span></label>
+          <label class="check-item"><input type="radio" name="badge" value="" {{ !request('badge') ? 'checked' : '' }} onchange="this.form.submit()"/> <span class="tag"><i data-lucide="layout-grid" style="width:13px;height:13px;"></i>All</span></label>
+          <label class="check-item"><input type="radio" name="badge" value="new" {{ request('badge') == 'new' ? 'checked' : '' }} onchange="this.form.submit()"/> <span class="tag new"><i data-lucide="sparkles" style="width:13px;height:13px;"></i>New</span></label>
+          <label class="check-item"><input type="radio" name="badge" value="sale" {{ request('badge') == 'sale' ? 'checked' : '' }} onchange="this.form.submit()"/> <span class="tag sale"><i data-lucide="badge-percent" style="width:13px;height:13px;"></i>Sale</span></label>
+          <label class="check-item"><input type="radio" name="badge" value="hot" {{ request('badge') == 'hot' ? 'checked' : '' }} onchange="this.form.submit()"/> <span class="tag hot"><i data-lucide="flame" style="width:13px;height:13px;"></i>Hot</span></label>
         </div>
       </div>
       <div class="sidebar-block">
@@ -75,7 +85,18 @@
             @for ($i = 0; $i < count($products); $i++)
               @php $p = $products[$i]; @endphp
               <div class="product-card">
-                @if($p->badge)<span class="tag {{ $p->badge }}">{{ ucfirst($p->badge) }}</span>@endif
+                @if($p->badge)
+                  <span class="tag {{ $p->badge }}">
+                    @if($p->badge === 'sale')
+                      <i data-lucide="badge-percent" style="width:12px;height:12px;"></i>
+                    @elseif($p->badge === 'new')
+                      <i data-lucide="sparkles" style="width:12px;height:12px;"></i>
+                    @elseif($p->badge === 'hot')
+                      <i data-lucide="flame" style="width:12px;height:12px;"></i>
+                    @endif
+                    {{ ucfirst($p->badge) }}
+                  </span>
+                @endif
                 @auth
                 <form action="{{ route('wishlist.toggle', $p->id) }}" method="POST" class="wishlist-form">
                   @csrf
