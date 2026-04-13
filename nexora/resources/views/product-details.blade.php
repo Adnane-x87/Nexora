@@ -24,7 +24,16 @@
                         <span class="count">4.9 (1,240 reviews)</span>
                     </div>
                     @if($product->badge)
-                        <span class="tag {{ $product->badge }}">{{ ucfirst($product->badge) }}</span>
+                        <span class="tag {{ $product->badge }}">
+                            @if($product->badge === 'sale')
+                                <i data-lucide="badge-percent" style="width:14px;height:14px;"></i>
+                            @elseif($product->badge === 'new')
+                                <i data-lucide="sparkles" style="width:14px;height:14px;"></i>
+                            @elseif($product->badge === 'hot')
+                                <i data-lucide="flame" style="width:14px;height:14px;"></i>
+                            @endif
+                            {{ ucfirst($product->badge) }}
+                        </span>
                     @endif
                 </div>
 
@@ -167,6 +176,21 @@
 .product-meta { display: flex; align-items: center; gap: 24px; margin-bottom: 40px; }
 .product-rating .stars { color: #ffca2c; margin-right: 8px; }
 .product-rating .count { font-size: 14px; color: var(--white-dim); }
+.product-meta .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+.product-meta .tag.sale { background: rgba(255, 71, 87, 0.15); color: #ff7b87; border-color: rgba(255, 71, 87, 0.35); }
+.product-meta .tag.new { background: rgba(232, 255, 71, 0.12); color: var(--accent); border-color: rgba(232, 255, 71, 0.35); }
+.product-meta .tag.hot { background: rgba(255, 107, 53, 0.15); color: #ff9a6d; border-color: rgba(255, 107, 53, 0.35); }
 
 .price-row { display: flex; align-items: baseline; gap: 20px; margin-bottom: 40px; }
 .price-main { font-size: 36px; font-weight: 800; color: var(--white); }

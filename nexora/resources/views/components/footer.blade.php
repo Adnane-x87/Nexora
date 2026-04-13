@@ -4,10 +4,18 @@
             <a href="{{ url('/') }}" class="nav-logo" style="font-size:26px;margin-bottom:16px;display:block;">NEX<span>ORA</span></a>
             <p class="footer-desc">Next-generation electronics for people who demand more. Curated selection, unbeatable prices, lightning-fast delivery.</p>
             <div class="social-links">
-                <div class="social-btn">𝕏</div>
-                <div class="social-btn">ig</div>
-                <div class="social-btn">in</div>
-                <div class="social-btn">yt</div>
+                <a href="#" class="social-btn" aria-label="X">
+                    <i class="bi bi-twitter-x" style="font-size:16px;line-height:1;"></i>
+                </a>
+                <a href="#" class="social-btn" aria-label="Instagram">
+                    <i class="bi bi-instagram" style="font-size:16px;line-height:1;"></i>
+                </a>
+                <a href="#" class="social-btn" aria-label="Facebook">
+                    <i class="bi bi-facebook" style="font-size:16px;line-height:1;"></i>
+                </a>
+                <a href="#" class="social-btn" aria-label="YouTube">
+                    <i class="bi bi-youtube" style="font-size:16px;line-height:1;"></i>
+                </a>
             </div>
         </div>
         <div>

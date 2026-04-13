@@ -25,7 +25,6 @@
       </div>
     </div>
     <div class="hero-visual">
-      <div class="mini-card left"><span class="icon"><i data-lucide="zap" style="width:16px;height:16px;"></i></span><div><div>Fast Delivery</div><div class="label">Ships in 24h</div></div></div>
       <div class="hero-product-card">
         <span class="product-badge">-25%</span>
         <div class="hero-img-placeholder">
@@ -36,7 +35,6 @@
         <div class="hero-prod-price">$1,499</div>
         <div class="rating-row"><span class="stars">★★★★★</span><span>(2,341 reviews)</span></div>
       </div>
-      <div class="mini-card right"><span class="icon"><i data-lucide="shield-check" style="width:16px;height:16px;"></i></span><div><div>Secure Pay</div><div class="label">256-bit SSL</div></div></div>
     </div>
   </section>
 
@@ -66,8 +64,18 @@
       @if ($topCategories && count($topCategories) > 0)
         @for ($i = 0; $i < count($topCategories); $i++)
           @php $cat = $topCategories[$i]; @endphp
+          @php
+            $catKey = \Illuminate\Support\Str::slug($cat->name);
+            $catIcon = match ($catKey) {
+                'phone', 'phones', 'smartphone', 'smartphones' => 'smartphone',
+                'laptop', 'laptops' => 'laptop',
+                'gaming', 'games' => 'gamepad-2',
+                'computer-hardware', 'hardware', 'components', 'computer-components' => 'cpu',
+                default => 'package',
+            };
+          @endphp
           <a href="{{ route('shop', ['category' => $cat->slug]) }}" class="category-card" style="text-decoration:none;">
-            <div class="cat-icon">{{ $cat->emoji }}</div>
+            <div class="cat-icon"><i data-lucide="{{ $catIcon }}" style="width:28px;height:28px;"></i></div>
             <div class="cat-name" style="color:var(--white);font-weight:600;">{{ $cat->name }}</div>
             <div class="cat-count" style="color:var(--white-dim);font-size:13px;margin-top:4px;">{{ $cat->products_count }} Products</div>
           </a>
